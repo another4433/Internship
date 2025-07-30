@@ -1,0 +1,299 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedcommondataserviceforapps_65268"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      },
+      "shared_flowpush": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedflowpush_e78c4"
+        },
+        "api": {
+          "name": "shared_flowpush"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr08e_sharedoffice365_88724"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_a_row_is_added,_modified_or_deleted": {
+          "metadata": {
+            "operationMetadataId": "7fd98eea-0586-4aea-b581-6cef65a6a435"
+          },
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 2,
+              "subscriptionRequest/entityname": "cr08e_orderline",
+              "subscriptionRequest/scope": 1
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "List_rows": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "77c75bb1-71d1-49c2-aed9-85b954e83f12"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "cr08e_orders"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@outputs('List_rows')?['body/value']",
+          "actions": {
+            "Condition": {
+              "actions": {
+                "List_rows_2": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "55236e7a-0fbc-4bcd-a966-5631c1c83dfd"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "ListRecords",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cr08e_item1s"
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                },
+                "Apply_to_each_2": {
+                  "foreach": "@outputs('List_rows_2')?['body/value']",
+                  "actions": {
+                    "Condition_2": {
+                      "actions": {
+                        "Delete_a_row": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "b24da013-cb91-4946-bfc3-c59dd657a5b4"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps",
+                              "operationId": "DeleteRecord",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "cr08e_item1s",
+                              "recordId": "(@{items('Apply_to_each_2')?['cr08e_qid']})"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Delete_a_row_2": {
+                          "runAfter": {
+                            "Delete_a_row": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "62b2367b-a6e5-4e7e-a861-9a21618a7e93"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps",
+                              "operationId": "DeleteRecord",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "cr08e_orders",
+                              "recordId": "(@{items('Apply_to_each')?['cr08e_orderid1']})"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Send_me_a_mobile_notification": {
+                          "runAfter": {
+                            "Delete_a_row_2": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "9421c3f7-4f66-4808-a05a-6d11270cb6e4"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_flowpush",
+                              "operationId": "SendNotification",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+                            },
+                            "parameters": {
+                              "NotificationDefinition/notificationText": "An order has been deleted"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Send_an_email_(V2)": {
+                          "runAfter": {
+                            "Send_me_a_mobile_notification": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "c9536ea7-4563-48fe-87d5-8d67af100742"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_office365",
+                              "operationId": "SendEmailV2",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+                            },
+                            "parameters": {
+                              "emailMessage/To": "alimohamedhassan9@gmail.com",
+                              "emailMessage/Subject": "Deleted Order",
+                              "emailMessage/Body": "<p>Dear Admin,<br>\nAn order has been deleted because an item from order line has been deleted.<br>\n<br>\nYours Sincerely,<br>\nAQWE Restaurant</p>",
+                              "emailMessage/Importance": "Normal"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        }
+                      },
+                      "runAfter": {},
+                      "else": {
+                        "actions": {
+                          "Send_me_a_mobile_notification_2": {
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "45e170ca-565c-49ac-923a-5885674b8574"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "host": {
+                                "connectionName": "shared_flowpush",
+                                "operationId": "SendNotification",
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+                              },
+                              "parameters": {
+                                "NotificationDefinition/notificationText": "Failed to delete an item"
+                              },
+                              "authentication": "@parameters('$authentication')"
+                            }
+                          }
+                        }
+                      },
+                      "expression": {
+                        "equals": [
+                          "@items('Apply_to_each_2')?['_cr08e_toorder_value']",
+                          "@items('Apply_to_each')?['cr08e_orderid1']"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "4b18f19f-0f25-41d1-8aec-d79b007fc14d"
+                      },
+                      "type": "If"
+                    }
+                  },
+                  "runAfter": {
+                    "List_rows_2": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "85e623dd-c52b-46f6-bec1-85941f8bb56f"
+                  },
+                  "type": "Foreach"
+                }
+              },
+              "runAfter": {},
+              "else": {
+                "actions": {
+                  "Send_me_a_mobile_notification_3": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "7cb1b2a7-68e4-4447-820b-53a632b2d3e6"
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connectionName": "shared_flowpush",
+                        "operationId": "SendNotification",
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+                      },
+                      "parameters": {
+                        "NotificationDefinition/notificationText": "Failed to delete an order"
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "equals": [
+                  "@triggerOutputs()?['body/_cr08e_toorder_value']",
+                  "@items('Apply_to_each')?['cr08e_orderid1']"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "e4bcc9eb-9d84-4633-ae61-d8cd6547b585"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_rows": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "580a1427-c88b-4935-89cb-8e53e600f712"
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

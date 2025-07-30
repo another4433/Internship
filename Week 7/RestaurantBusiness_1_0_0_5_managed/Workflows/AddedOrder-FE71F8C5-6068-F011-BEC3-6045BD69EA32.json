@@ -1,0 +1,183 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_flowpush": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedflowpush_e78c4"
+        },
+        "api": {
+          "name": "shared_flowpush"
+        }
+      },
+      "shared_msnweather": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr08e_sharedmsnweather_87ba2"
+        },
+        "api": {
+          "name": "shared_msnweather"
+        }
+      },
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedcommondataserviceforapps_65268"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr08e_sharedoffice365_88724"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_a_row_is_added,_modified_or_deleted": {
+          "metadata": {
+            "operationMetadataId": "0455a462-7da6-4476-882b-3b8c5a1419ea"
+          },
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 1,
+              "subscriptionRequest/entityname": "cr08e_orderline",
+              "subscriptionRequest/scope": 4
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "Send_me_a_mobile_notification": {
+          "runAfter": {
+            "Send_an_email_(V2)": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "12c0b92b-595c-4893-81ad-a9a9e25cd099"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_flowpush",
+              "operationId": "SendNotification",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+            },
+            "parameters": {
+              "NotificationDefinition/notificationText": "Order added to the line"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Current_time": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "1540b8ea-52e7-429d-8fd3-f7d1684911f6"
+          },
+          "type": "Expression",
+          "kind": "CurrentTime",
+          "inputs": {}
+        },
+        "Get_current_weather": {
+          "runAfter": {
+            "Current_time": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3dfda13f-9801-45c2-88c9-f76626697427"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_msnweather",
+              "operationId": "CurrentWeather",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_msnweather"
+            },
+            "parameters": {
+              "Location": "Manama",
+              "units": "C"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Get_forecast_for_today": {
+          "runAfter": {
+            "Get_current_weather": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b4bde8c8-3ebb-42b1-a949-cd8bcfa7c757"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_msnweather",
+              "operationId": "TodaysForecast",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_msnweather"
+            },
+            "parameters": {
+              "Location": "Doha",
+              "units": "C"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Send_an_email_(V2)": {
+          "runAfter": {
+            "Get_forecast_for_today": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "86445c19-786c-4346-a331-93b48655b2ca"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+            },
+            "parameters": {
+              "emailMessage/To": "alimohamedhassan9@outlook.com",
+              "emailMessage/Subject": "Added Order",
+              "emailMessage/Body": "<p>Dear Admin,<br>\nAn order with an ID of @{triggerOutputs()?['body/_cr08e_toorder_value']} was added in the order list with ID of @{triggerOutputs()?['body/cr08e_olid']} that was added by the user with the ID of @{triggerOutputs()?['body/_cr08e_userid_value']}. Please! Process the order.<br>\nLast Creation: @{body('Current_time')}.<br>\nWeather: @{outputs('Get_current_weather')?['body/responses/weather/current/cap']}, @{outputs('Get_current_weather')?['body/responses/source/location']}, @{outputs('Get_current_weather')?['body/units/temperature']}.<br>\nForecast: <br>\n@{outputs('Get_forecast_for_today')?['body/responses/daily/day/cap']}.<br>\n@{outputs('Get_forecast_for_today')?['body/responses/daily/day/summary']}.<br>\n@{outputs('Get_forecast_for_today')?['body/responses/daily/night/cap']}.<br>\n@{outputs('Get_forecast_for_today')?['body/responses/daily/night/summary']}.<br>\n<br>\nYours Sincerely,<br>\nAQWE Restaurant</p>",
+              "emailMessage/Importance": "Normal"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

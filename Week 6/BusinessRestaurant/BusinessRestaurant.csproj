@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="Data Structure">
+        <HintPath>..\..\Week 5\DSTest\Data Structure\obj\Debug\net9.0\Data Structure.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+      <PackageReference Include="Microsoft.Data.SqlClient.SNI" Version="6.0.2" />
+      <PackageReference Include="MySql.Data" Version="9.4.0" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,112 @@
+$searcherEditor: rgb(94, 95, 96);
+$widthSearching: 360px;
+$minimalMargin: 0.1px;
+$flexibility: flex;
+$centering: center;
+
+#use-of-user {
+    margin-left: 86%;
+    align-items: end;
+    align-self: auto;
+    align-content: end;
+}
+#sign-in {
+    border-radius: 25px;
+    background-color: rgb(154, 237, 255);
+    width: 75px;
+    color: black;
+}
+html {
+    background-color: rgb(36, 36, 36);
+    overflow: auto;
+    resize: both;
+}
+#google-logo {
+    margin-left: 30%;
+    align-items: $centering;
+    align-self: $centering;
+    align-content: $centering;
+    margin-bottom: $minimalMargin;
+    height: 300px;
+}
+p {
+    word-spacing: 20px;
+    color: white;
+    display: $flexibility;
+}
+button {
+    word-spacing: 50%;
+    border-radius: 5px;
+    background-color: rgb(66, 66, 66);
+    color: white;
+    height: 40px;
+    width: 150px;
+    border-color: black;
+}
+#buttons {
+    margin-top: $minimalMargin;
+    margin-left: 41%;
+    align-items: $centering;
+    align-self: $centering;
+    align-content: $centering;
+}
+#extra {
+    margin-left: 45%;
+    align-items: $centering;
+    align-self: $centering;
+    align-content: $centering;
+}
+section {
+    background-color: black;
+}
+#use-of-alternates {
+    margin-right: 40%;
+}
+#purposes {
+    margin-left: 12%;
+}
+#searching {
+    background-color: $searcherEditor;
+    margin-left: 25%;
+    align-items: $centering;
+    align-self: $centering;
+    align-content: $centering;
+    white-space: 20px;
+    margin-right: 23%;
+}
+nav {
+    display: $flexibility;
+}
+div {
+    display: $flexibility;
+}
+section {
+    display: $flexibility;
+    border-top-color: gray;
+    border-width: $minimalMargin;
+    margin-top: $minimalMargin;
+}
+#search-idea {
+    margin-left: 1px;
+    width: $widthSearching;
+}
+#others {
+    width: $widthSearching;
+}
+#country {
+    background-color: black;
+    height: 25px;
+    border-bottom-color: gray;
+    border-width: $minimalMargin;
+    margin-bottom: $minimalMargin;
+}
+#mic {
+    margin-left: 80%;
+}
+#cam {
+    margin-left: 10px;
+}
+#fname {
+    background-color: $searcherEditor;
+    width: $widthSearching;
+}

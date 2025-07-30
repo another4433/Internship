@@ -1,0 +1,6 @@
+300px = 6 items
+250px = 5 items
+210px = 4 items
+160px = 3 items
+110px = 2 items
+70px = 1 item
