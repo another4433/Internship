@@ -18,3 +18,9 @@ h1 {
 #Forget {
     margin-left: 10mm;
 }
+th {
+    text-align: center;
+    font-weight: bold;
+    font: 1em;
+    font-family: sans-serif;
+}
