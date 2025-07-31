@@ -1,7 +1,10 @@
 img {
     width: 150px;
     height: 150px;
-    margin-left: 45%;
+    margin-left: 45.5%;
+    align-self: center;
+    align-content: center;
+    text-align: center;
 }
 h1 {
     text-align: center;
@@ -11,16 +14,17 @@ h1 {
     flex-direction: row;
     text-align: center;
     align-content: center;
-}
-#Register {
-    margin-right: 10mm;
-}
-#Forget {
-    margin-left: 10mm;
+    margin-left: 4.5%;
 }
 th {
     text-align: center;
     font-weight: bold;
     font: 1em;
     font-family: sans-serif;
+}
+div a {
+    margin-left: 10mm;
+}
+div > a {
+    margin-right: 10mm;
 }
