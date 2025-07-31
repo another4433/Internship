@@ -4,10 +4,14 @@
         <title>View Last Order</title>
         <meta title="Dynamics" content="width=device-width; initial-scale-1.0">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="LastOrder.css">
     </head>
     <body class="pico">
-        <h1>Last Order Details</h1><br>
-        <table border="1px">
+        <div>
+            <h1>Last Order Details</h1>
+            <button>Process?</button>
+        </div><br>
+        <table border="1px" class="container">
             <tr><th>Order Line ID</th><td id="oLID"></td></tr>
             <tr><th>Item Master ID</th><td id="masterID"></td></tr>
             <tr><th>Order ID</th><td id="orderID"></td></tr>
@@ -15,10 +19,10 @@
             <tr><th>User ID</th><td id="userID"></td></tr>
             <tr><th>History Date</th><td id="theHistory"></td></tr>
             <tr><th>Request Creator</th><td id="theCustomerName"></td></tr>
-            <tr><th>Created On</th><tr id="theCreation"></tr></tr>
+            <tr><th>Created On</th><td id="theCreation"></td></tr>
             <tr><th>Status</th><td>Active</td></tr>
         </table><br>
-        <table border="1px">
+        <table border="1px" class="container">
             <tbody>
                 <tr>
                     <th>Item ID</th>

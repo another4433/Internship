@@ -3,13 +3,14 @@
     <title>AQWE Restaurant</title>
     <meta title="Dynamics" content="width=device-width; initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="RestaurantHome.css">
 </html>
 <body>
     <h1>AQWE Restaurant</h1><br>
-    <div>
-        <div>
-            <h4>Your Orders </h4>
-            <table>
+    <div id="total">
+        <div id="personal">
+            <h4>Your Orders </h4><br>
+            <table class="container">
                 <tbody>
                     <tr>
                         <th>Master ID</th>
@@ -26,17 +27,18 @@
                         <td id="itemID"></td>
                         <td id="itemName"></td>
                         <td id="itemCategory"></td>
-                        <td id="orderID"><a href="RestaurantViewOrder.html">1</a></td>
+                        <td id="orderID">1</td>
                         <td id="orderQuantity"></td>
                         <td id="toUserID"></td>
                         <td id="createdOnID"></td>
                     </tr>
                 </tbody>
-            </table>
+            </table><br>
+            <button id="view">View Order</button>
         </div>
-        <div>
-            <h4>Order Line </h4>
-            <table>
+        <div id="global">
+            <h4>Order Line</h4><br>
+            <table class="container">
                 <tbody>
                     <tr>
                         <th>Order Line ID</th>
@@ -45,10 +47,20 @@
                         <th>Request Creator</th>
                         <th>Created On</th>
                     </tr>
+                    <tr>
+                        <td id="oLID"></td>
+                        <td id="orderID"></td>
+                        <td id="userID"></td>
+                        <td id="requestor"></td>
+                        <td id="theCreated"></td>
+                    </tr>
                 </tbody>
             </table><br>
-            <button><a href="RestaurantFirstOrder.html">View First Order</a></button>
-            <button><a href="RestaurantLastOrder.html">View Last Order</a></button>
+            <div id="buttons">
+                <button id="first">View First Order</button>
+                <button id="last">View Last Order</button>
+            </div>
         </div>
     </div>
+    <script src="RestaurantHome.js">console.log("Action started.");</script>
 </body>

@@ -1,0 +1,60 @@
+h1 {
+    text-align: center;
+}
+#buttons {
+    align-content: center;
+}
+div > button {
+    margin-right: 5%;
+}
+div button {
+    margin-left: 5%;
+}
+h4 {
+    text-align: center;
+}
+html {
+    background-color: rgb(120, 249, 120);
+}
+table {
+    border: initial;
+    border-width: 2px;
+    border-style: solid;
+    width: 200px;
+}
+tr {
+    border-width: 1px;
+}
+th {
+    border-width: 1px;
+}
+td {
+    border-width: 1px;
+}
+button {
+    align-self: center;
+    text-align: center;
+}
+div {
+    align-content: center;
+}
+#total {
+    flex: content;
+    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    align-content: center;
+}
+#personal {
+    display: block;
+    text-align: center;
+    padding-left: 2%;
+    padding-right: 2%;
+}
+#global {
+    display: block;
+    text-align: center;
+    padding-right: 2%;
+    padding-left: 2%;
+}
