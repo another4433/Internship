@@ -10,9 +10,6 @@ div > button {
 div button {
     margin-left: 5%;
 }
-h4 {
-    text-align: center;
-}
 html {
     background-color: rgb(120, 249, 120);
 }
@@ -57,4 +54,17 @@ div {
     text-align: center;
     padding-right: 2%;
     padding-left: 2%;
+}
+#theHeading {
+    display: flex;
+    flex-direction: row;
+    margin-left: 40%;
+}
+div > h1 {
+    margin-right: 10%;
+}
+div > img {
+    margin-left: 35.5%;
+    width: 150px;
+    height: 150px;
 }

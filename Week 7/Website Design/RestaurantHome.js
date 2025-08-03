@@ -1,9 +1,16 @@
-document.getElementById("first").addEventListener('click', () => {
+const theFirst = document.getElementById("first");
+const theLast = document.getElementById("last");
+const theView = document.getElementById("view");
+const theProfiling = document.getElementById("theProfiling");
+theFirst.addEventListener('click', () => {
     window.location.assign("RestaurantFirstOrder.html");
 });
-document.getElementById("last").addEventListener('click', () => {
+theLast.addEventListener('click', () => {
     window.location.assign("RestaurantLastOrder.html");
 });
-document.getElementById("view").addEventListener('click', () => {
-    window.location.assign("RestaurantViewOrder.html");
+theView.addEventListener('click', () => {
+    window.location.assign("RestaurantSearch.html");
 });
+theProfiling.addEventListener('click', () => {
+    window.location.assign("RestaurantProfile.html");
+})

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>User Item Searching</title>
+        <meta title="Dynamics" content="width=device-width; initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="RestaurantSearch.css">
+    </head>
+    <body>
+        <h1>Search for item master by ID</h1><br><br>
+        <form class="container">
+            <input type="number" name="searchID" placeholder="Enter the ID of Item Master" id="theTest">
+            <input type="submit" name="submit" value="Confirm" id="thisIsSubmit">
+        </form>
+        <script>
+            const theSubmit = document.getElementById("thisIsSubmit");
+            theSubmit.addEventListener('click', () => {
+                window.location.assign("RestaurantViewOrder.html");
+            });
+            const theInput = document.getElementById("theTest");
+            theInput.addEventListener('mouseover', () => {
+                window.location.assign("RestaurantViewOrder.html");
+            });
+        </script>
+    </body>
+</html>
