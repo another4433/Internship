@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>View First Order</title>
+        <meta title="Dynamics" content="width=device-width; initial-scale-1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="FirstOrder.css">
+    </head>
+    <body class="pico">
+        <div name="orderViewHead">
+            <h1 name="viewTitle">First Order Details</h1>
+            <button name="actionButton">Process?</button>
+        </div><br>
+        <table border="1px" class="container" name="theOrder">
+            <tr><th>Order Line ID</th><td id="oLID" name="oLID"></td></tr>
+            <tr><th>Item Master ID</th><td id="masterID" name="masterID"></td></tr>
+            <tr><th>Order ID</th><td id="orderID" name="orderID"></td></tr>
+            <tr><th>Quantity</th><td id="theQuantity" name="theQuantity">0</td></tr>
+            <tr><th>User ID</th><td id="userID" name="userID"></td></tr>
+            <tr><th>History Date</th><td id="theHistory" name="theHistory"></td></tr>
+            <tr><th>Request Creator</th><td id="theCustomerName" name="theCustomerName"></td></tr>
+            <tr><th>Created On</th><td id="theCreation" name="theCreation"></td></tr>
+            <tr>
+                <th>Status</th>
+                <td>Active</td>
+            </tr>
+        </table><br>
+        <table border="1px" class="container" name="theItems">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="itemID" name="itemID"></td>
+                    <td id="itemName" name="itemName"></td>
+                    <td id="category" name="category"></td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

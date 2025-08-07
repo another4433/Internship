@@ -6,16 +6,16 @@
     <link rel="stylesheet" href="RestaurantHome.css">
 </html>
 <body>
-    <div id="theHeading">
-        <h1>AQWE Restaurant</h1>
-        <img src="profile-default.png.jpg" alt="Profile" id="theProfiling">
+    <div id="theHeading" name="headContainer">
+        <h1 name="theRestaurant">AQWE Restaurant</h1>
+        <img name="restaurantImage" src="profile-default.png.jpg" alt="Profile" id="theProfiling">
     </div>
-    <span>--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br>
-    <br><div id="total">
-        <div id="personal">
-        <h4>Your Orders </h4><br>
-            <table class="container">
-                <tbody>
+    <span name="justALine">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br>
+    <br><div id="total" name="total">
+        <div id="personal" name="personal">
+            <h4 name="personalOrderTitle">Your Orders </h4><br>
+            <table class="pico" name="personalOrders">
+                <thead>
                     <tr>
                         <th>Master ID</th>
                         <th>Item ID</th>
@@ -26,24 +26,27 @@
                         <th>To User</th>
                         <th>Created On</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
-                        <td id="masterID"></td>
-                        <td id="itemID"></td>
-                        <td id="itemName"></td>
-                        <td id="itemCategory"></td>
-                        <td id="orderID">1</td>
-                        <td id="orderQuantity"></td>
-                        <td id="toUserID"></td>
-                        <td id="createdOnID"></td>
+                        <td id="masterID" name="masterID"></td>
+                        <td id="itemID" name="itemID"></td>
+                        <td id="itemName" name="itemName"></td>
+                        <td id="itemCategory" name="itemCategory"></td>
+                        <td id="orderID" name="orderID">1</td>
+                        <td id="orderQuantity" name="orderQuantity"></td>
+                        <td id="toUserID" name="toUserID"></td>
+                        <td id="createdOnID" name="createdOnID"></td>
                     </tr>
                 </tbody>
             </table><br>
-            <button id="view">View Order</button>
+            <button id="Add" name="Add">Add Order</button>
+            <button id="view" name="view">View Order</button>
         </div>
-        <div id="global">
-            <h4>Order Line</h4><br>
-            <table class="container">
-                <tbody>
+        <div id="global" name="global">
+            <h4 name="globalOrdersTitle">Order Line</h4><br>
+            <table class="container" name="globalOrders">
+                <thead>
                     <tr>
                         <th>Order Line ID</th>
                         <th>Order ID</th>
@@ -51,20 +54,22 @@
                         <th>Request Creator</th>
                         <th>Created On</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
-                        <td id="oLID"></td>
-                        <td id="orderID"></td>
-                        <td id="userID"></td>
-                        <td id="requestor"></td>
-                        <td id="theCreated"></td>
+                        <td id="oLID" name="oLID"></td>
+                        <td id="orderID" name="orderID"></td>
+                        <td id="userID" name="userID"></td>
+                        <td id="requestor" name="requestor"></td>
+                        <td id="theCreated" name="theCreated"></td>
                     </tr>
                 </tbody>
             </table><br>
-            <div id="buttons">
-                <button id="first">View First Order</button>
-                <button id="last">View Last Order</button>
+            <div id="buttons" name="buttons">
+                <button id="first" name="first">View First Order</button>
+                <button id="last" name="last">View Last Order</button>
             </div>
         </div>
     </div>
-    <script src="RestaurantHome.js">console.log("Action started.");</script>
+    <script src="RestaurantHome.js" name="mainOperations">console.log("Action started.");</script>
 </body>

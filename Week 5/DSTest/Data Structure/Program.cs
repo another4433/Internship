@@ -14,6 +14,16 @@
             list2.add(2);
             list.printList();
             list2.printList();
+            Stack<String> stack = new Stack<String>();
+            stack.push("First");
+            stack.push("Second");
+            stack.push("Third");
+            stack.printStack();
+            Queue<String> queue = new Queue<String>();
+            queue.offer("First");
+            queue.offer("Second");
+            queue.offer("Third");
+            queue.printQueue();
         }
     }
 

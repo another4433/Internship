@@ -19,14 +19,14 @@ table {
     border-style: solid;
     width: 200px;
 }
-tr {
-    border-width: 1px;
-}
 th {
-    border-width: 1px;
-}
-td {
-    border-width: 1px;
+    font: optional;
+    font-family: sans-serif;
+    font-weight: bold;
+    border-width: 2px;
+    border-color: lightgray;
+    border-left-width: 2px;
+    border-left-color: black;
 }
 button {
     align-self: center;

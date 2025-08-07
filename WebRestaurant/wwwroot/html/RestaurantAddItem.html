@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Add order and item</title>
+        <meta title="Dynamics" content="width=device-width; initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="RestaurantAddItem.css">
+    </head>
+    <body>
+        <h2 name="addTitle">Add Order</h2><br>
+        <header name="addCommand">Fill in the following details: </header>
+        <form class="container" name="addForm">
+            <label for="orderQuantity">Order Quantity</label>
+            <input type="number" name="orderQuantity" value="0"><br>
+            <label for="itemName">Item Name</label>
+            <input type="text" name="itemName" placeholder="Enter the name of the food"><br>
+            <label for="itemCategory">Item Category</label>
+            <input type="text" name="itemCategory" placeholder="Which category do you recognize your food to belong in?"><br>
+            <input type="submit" name="submit" value="Submit">
+        </form><br><!--Create count for order and use it for adding the order to the order line-->
+    </body><!--Try to retrieve the count of the user for adding order to order line-->
+</html>

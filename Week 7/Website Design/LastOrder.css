@@ -2,14 +2,6 @@ img {
     width: 140px;
     height: 90px;
 }
-div {
-    flex: initial;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    text-align: start;
-    align-content: center;
-    margin-top: 5mm;
-}
 table {
     border-width: 2px;
     border-style: solid;
@@ -31,10 +23,5 @@ html {
 }
 h1 {
     display: inline;
-    margin-right: 62%;
     padding-left: 3%;
-}
-img {
-    display: inline;
-    margin-left: 62%;
 }

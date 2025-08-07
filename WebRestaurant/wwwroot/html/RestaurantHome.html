@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <title>AQWE Restaurant</title>
+    <meta title="Dynamics" content="width=device-width; initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="RestaurantHome.css">
+</html>
+<body>
+    <div id="theHeading" name="headContainer">
+        <h1 name="theRestaurant">AQWE Restaurant</h1>
+        <img name="restaurantImage" src="profile-default.png.jpg" alt="Profile" id="theProfiling">
+    </div>
+    <span name="justALine">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br>
+    <br><div id="total" name="total">
+        <div id="personal" name="personal">
+            <h4 name="personalOrderTitle">Your Orders </h4><br>
+            <table class="pico" name="personalOrders">
+                <thead>
+                    <tr>
+                        <th>Master ID</th>
+                        <th>Item ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Order ID</th>
+                        <th>Quantity</th>
+                        <th>To User</th>
+                        <th>Created On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="masterID" name="masterID"></td>
+                        <td id="itemID" name="itemID"></td>
+                        <td id="itemName" name="itemName"></td>
+                        <td id="itemCategory" name="itemCategory"></td>
+                        <td id="orderID" name="orderID">1</td>
+                        <td id="orderQuantity" name="orderQuantity"></td>
+                        <td id="toUserID" name="toUserID"></td>
+                        <td id="createdOnID" name="createdOnID"></td>
+                    </tr>
+                </tbody>
+            </table><br>
+            <button id="Add" name="Add">Add Order</button>
+            <button id="view" name="view">View Order</button>
+        </div>
+        <div id="global" name="global">
+            <h4 name="globalOrdersTitle">Order Line</h4><br>
+            <table class="container" name="globalOrders">
+                <thead>
+                    <tr>
+                        <th>Order Line ID</th>
+                        <th>Order ID</th>
+                        <th>User ID</th>
+                        <th>Request Creator</th>
+                        <th>Created On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="oLID" name="oLID"></td>
+                        <td id="orderID" name="orderID"></td>
+                        <td id="userID" name="userID"></td>
+                        <td id="requestor" name="requestor"></td>
+                        <td id="theCreated" name="theCreated"></td>
+                    </tr>
+                </tbody>
+            </table><br>
+            <div id="buttons" name="buttons">
+                <button id="first" name="first">View First Order</button>
+                <button id="last" name="last">View Last Order</button>
+            </div>
+        </div>
+    </div>
+    <script src="RestaurantHome.js" name="mainOperations">console.log("Action started.");</script>
+</body>

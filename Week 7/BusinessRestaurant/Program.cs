@@ -1,13 +1,12 @@
 ﻿using System.Data.Common;
 using System.Data.SqlTypes;
-using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient; 
 using System.Diagnostics;
 using Data_Structure;
 
 namespace BusinessRestaurant;
 
-public abstract class Program
+internal abstract class Program
 {
     static void Main(string[] args)
     {
@@ -66,7 +65,7 @@ public abstract class Program
                 try
                 {
                     using (MySqlCommand sqlCommand1 =
-                           new MySqlCommand("INSERT INTO customer VALUES (@Name, @Id, @BirthDate, @Email, @Phone)",
+                           new MySqlCommand("INSERT INTO Customer VALUES (@Name, @Id, @BirthDate, @Email, @Phone)",
                                conn))
                     {
                         sqlCommand1.Parameters.AddWithValue("@Name", sqlName1.Value);
@@ -105,7 +104,7 @@ public abstract class Program
                 {
                     using (MySqlCommand sqlCommand2 =
                            new MySqlCommand(
-                               "INSERT INTO restaurantuser VALUES (@UserCount, @Password, @Id)", conn))
+                               "INSERT INTO RestaurantUser VALUES (@UserCount, @Password, @Id)", conn))
                     {
                         sqlCommand2.Parameters.AddWithValue("@UserCount", users.Count);
                         sqlCommand2.Parameters.AddWithValue("@Password", sqlPass1.Value);
@@ -149,7 +148,7 @@ public abstract class Program
                 SqlString sqlPass2 = new SqlString(pass2);
                 try
                 {
-                    using (MySqlCommand theCommand = new MySqlCommand("SELECT * FROM restaurantuser", conn))
+                    using (MySqlCommand theCommand = new MySqlCommand("SELECT * FROM RestaurantUser", conn))
                     {
                         theCommand.Prepare();
                         using (MySqlDataReader reader = theCommand.ExecuteReader())
@@ -159,6 +158,8 @@ public abstract class Program
                                 if (reader["Password"].Equals(sqlPass2.Value))
                                 {
                                     Console.WriteLine("Account found!");
+                                    user1.SetPassword(reader["Password"].ToString()!);
+                                    users.Add(user1);
                                     authenticate[1] = true;
                                 }
                             }
@@ -172,7 +173,7 @@ public abstract class Program
                 }
                 try
                 {
-                    using (MySqlCommand command = new MySqlCommand("SELECT * FROM customer", conn))
+                    using (MySqlCommand command = new MySqlCommand("SELECT * FROM Customer", conn))
                     {
                         command.Prepare();
                         using (MySqlDataReader reader = command.ExecuteReader())
@@ -181,7 +182,14 @@ public abstract class Program
                             {
                                 if (reader["Email"].Equals(sqlEmail2.Value))
                                 {
+                                    User oldUser = user1;
                                     Console.WriteLine("Account found!");
+                                    user1.GetCustomer().SetEmail(reader["Email"].ToString()!);
+                                    user1.GetCustomer().SetName(reader["Name"].ToString()!);
+                                    user1.GetCustomer().SetPhone(reader["Phone"].ToString()!);
+                                    user1.GetCustomer().SetId(Convert.ToInt64(reader["Id"]));
+                                    users.Remove(oldUser);
+                                    users.Add(user1);
                                     authenticate[2] = true;
                                 }
                             }
@@ -213,7 +221,7 @@ public abstract class Program
                 conn.Close();
                 Environment.Exit(0);
             }
-            if ((authenticate[0] || authenticate[1] || authenticate[2]) && user1.Equals(admin))
+            if ((authenticate[0] || authenticate[1] || authenticate[2]) && (user1.Equals(admin) || user1.GetCustomer().GetId() == admin.GetCustomer().GetId()))
             {
                 Console.WriteLine("Choose from the restaurant menu below: ");
                 Console.WriteLine("(0) Exit");
@@ -245,30 +253,32 @@ public abstract class Program
                             try
                             {
                                 using (MySqlCommand itemCommand = new MySqlCommand(
-                                           "INSERT INTO item VALUES (@Count, @Name, @Category)", conn))
+                                           "INSERT INTO Item VALUES (@Count, @Name, @Category)", conn))
                                 {
                                     itemCommand.Parameters.AddWithValue("@Count", itemMasters.Count);
                                     itemCommand.Parameters.AddWithValue("@Name", sqlItemName1.Value);
                                     itemCommand.Parameters.AddWithValue("@Category", sqlItemCategory1.Value);
                                     itemCommand.Prepare();
-                                    int rows = itemCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = itemCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException e)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine($"Message: \n{e.Message}");
                             }
                             Console.Write("Please enter an item quantity: ");
                             int itemQuantity1 = Convert.ToInt32(Console.ReadLine());
@@ -280,63 +290,67 @@ public abstract class Program
                             try
                             {
                                 using (MySqlCommand orderCommand = new MySqlCommand(
-                                           "INSERT INTO restaurantorder VALUES (@Count, @Quantity, @UserId)",
+                                           "INSERT INTO RestaurantOrder VALUES (@Count, @Quantity, @UserId)",
                                            conn))
                                 {
                                     orderCommand.Parameters.AddWithValue("@Count", orders.Count);
                                     orderCommand.Parameters.AddWithValue("@Quantity", sqlItemQuantity1.Value);
                                     orderCommand.Parameters.AddWithValue("@UserId", user1.GetUserId());
-                                    int rows = orderCommand.ExecuteNonQuery();
                                     orderCommand.Prepare();
-                                    if (rows == 1)
+                                    var rows = orderCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException ex)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine($"Message: \n{ex.Message}");
                             }
                             orders.Add(order);
                             itemMaster = new ItemMaster(item, order, itemMasters.Count);
-                            itemMasters.Add(itemMaster);
                             try
                             {
                                 using (MySqlCommand itemMasterCommand = new MySqlCommand(
-                                           "INSERT INTO itemmaster VALUES (@Count, @Quantity, @UserId)", conn))
+                                           "INSERT INTO ItemMaster VALUES (@Count, @Child, @Toy)", conn))
                                 {
                                     itemMasterCommand.Parameters.AddWithValue("@Count", itemMasters.Count);
-                                    itemMasterCommand.Parameters.AddWithValue("@Quantity", sqlItemQuantity1.Value);
-                                    itemMasterCommand.Parameters.AddWithValue("@UserId", user1.GetUserId());
+                                    itemMasterCommand.Parameters.AddWithValue("@Child", item.GetItemId());
+                                    itemMasterCommand.Parameters.AddWithValue("@Toy", order.GetOrderId());
                                     itemMasterCommand.Prepare();
-                                    int rows = itemMasterCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = itemMasterCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException exception)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine(exception.Message);
                             }
+                            itemMasters.Add(itemMaster);
                             foreach (ItemMaster theVariable in itemMasters)
                             {
                                 if (theVariable.GetMasterId() == item.GetItemId())
@@ -345,62 +359,69 @@ public abstract class Program
                                     try
                                     {
                                         using (MySqlCommand editItem = new MySqlCommand(
-                                                   "UPDATE item SET qID = @New WHERE qID = @Old",
+                                                   "UPDATE Item SET qID = @New WHERE qID = @Old",
                                                    conn))
                                         {
                                             editItem.Parameters.AddWithValue("@New", newItemId);
                                             editItem.Parameters.AddWithValue("@Old", item.GetItemId());
                                             editItem.Prepare();
-                                            int rows = editItem.ExecuteNonQuery();
-                                            if (rows == 1)
+                                            var rows = editItem.ExecuteNonQuery();
+                                            switch (rows)
                                             {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                case 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} row affected.");
+                                                    break;
+                                                case > 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} rows affected.");
+                                                    break;
+                                                default:
+                                                    Console.WriteLine("No changes happened to the database.");
+                                                    break;
                                             }
                                         }
                                     }
-                                    catch
+                                    catch (MySqlException ex)
                                     {
                                         Console.WriteLine("Failed to execute an operation in database!");
+                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        Console.WriteLine(ex.Message);
                                     }
                                     try
                                     {
                                         using (MySqlCommand editItemMaster =
                                                new MySqlCommand(
-                                                   "UPDATE itemmaster SET childID = @New WHERE masterID = @Old AND childID = @Child",
+                                                   "UPDATE ItemMaster SET childID = @New WHERE masterID = @Old AND childID = @Child",
                                                    conn))
                                         {
                                             editItemMaster.Parameters.AddWithValue("@New", newItemId);
                                             editItemMaster.Parameters.AddWithValue("@Old", itemMaster.GetMasterId());
                                             editItemMaster.Parameters.AddWithValue("@Child", item.GetItemId());
                                             editItemMaster.Prepare();
-                                            int rows = editItemMaster.ExecuteNonQuery();
-                                            if (rows == 1)
+                                            var rows = editItemMaster.ExecuteNonQuery();
+                                            switch (rows)
                                             {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                case 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} row affected.");
+                                                    break;
+                                                case > 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} rows affected.");
+                                                    break;
+                                                default:
+                                                    Console.WriteLine("No changes happened to the database.");
+                                                    break;
                                             }
                                         }
                                     }
-                                    catch
+                                    catch (MySqlException ex)
                                     {
                                         Console.WriteLine("Failed to execute an operation in database!");
+                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        Console.WriteLine(ex.Message);
                                     }
-
                                     item.SetItemId(newItemId);
                                     theVariable.SetItemId(item); //Refer to Item Master class
                                 }
@@ -409,31 +430,32 @@ public abstract class Program
                             {
                                 DateTime date = DateTime.Now;
                                 using (MySqlCommand lineCommand = new MySqlCommand(
-                                           "INSERT INTO orderline VALUES (@UserId, @OrderId, @Date)",
-                                           conn))
+                                           "INSERT INTO OrderLine VALUES (@UserId, @OrderId, @Date)", conn))
                                 {
                                     lineCommand.Parameters.AddWithValue("@UserId", user1.GetUserId());
                                     lineCommand.Parameters.AddWithValue("@OrderId", order.GetOrderId());
-                                    lineCommand.Parameters.AddWithValue("@Date", date);
+                                    lineCommand.Parameters.AddWithValue("@Date", date.Date);
                                     lineCommand.Prepare();
-                                    int rows = lineCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = lineCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException exception)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine(exception.Message);
                             }
                             orderLine.OfferOrder(order);
                             user1.AddOrder(order);
@@ -465,43 +487,43 @@ public abstract class Program
                                 Console.Write("Please enter an item category: ");
                                 string itemCategory2 = Console.ReadLine()!;
                                 SqlString sqlItemCategory2 = new SqlString(itemCategory2);
-                                item = new Item(name: itemName2, category: itemCategory2, itemId: itemMasters.Count);
-                                item.SetItemId(itemMasters.Count + 1);
+                                item = new Item(name: itemName2, category: itemCategory2, itemId: itemMasters.Count+1);
                                 try
                                 {
                                     using (MySqlCommand itemCommand = new MySqlCommand(
-                                               "INSERT INTO item VALUES (@Count, @Name, @Category)",
-                                               conn))
+                                               "INSERT INTO Item VALUES (@Count, @Name, @Category)", conn))
                                     {
-                                        itemCommand.Parameters.AddWithValue("@Count", itemMasters.Count);
+                                        itemCommand.Parameters.AddWithValue("@Count", itemMasters.Count+1);
                                         itemCommand.Parameters.AddWithValue("@Name", sqlItemName2.Value);
                                         itemCommand.Parameters.AddWithValue("@Category", sqlItemCategory2.Value);
                                         itemCommand.Prepare();
-                                        int rows = itemCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = itemCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
                                 }
-                                itemMaster = new ItemMaster(item, order, itemMasters.Count);
+                                itemMaster = new ItemMaster(item, order, itemMasters.Count+1);
+                                itemMasters.Add(itemMaster);
                                 try
                                 {
                                     using (MySqlCommand itemMasterCommand =
                                            new MySqlCommand(
-                                               "INSERT INTO itemmaster VALUES (@MasterId, @ItemId, @OrderId)",
+                                               "INSERT INTO ItemMaster VALUES (@MasterId, @ItemId, @OrderId)",
                                                conn))
                                     {
                                         itemMasterCommand.Parameters.AddWithValue("@ItemId", item.GetItemId());
@@ -509,26 +531,27 @@ public abstract class Program
                                         itemMasterCommand.Parameters.AddWithValue("@MasterId",
                                             itemMaster.GetMasterId());
                                         itemMasterCommand.Prepare();
-                                        int rows = itemMasterCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = itemMasterCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
-                                catch
+                                catch (MySqlException exception)
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
+                                    Console.WriteLine(exception.Message);
                                 }
-                                itemMasters.Add(itemMaster);
                                 Console.WriteLine(
                                     $"Would you like to add more items to the same order as quantity of {order.GetQuantity()}?");
                                 Console.WriteLine("yes or no?");
@@ -558,7 +581,7 @@ public abstract class Program
                                 {
                                     Console.WriteLine();
                                     Console.WriteLine("Item Master details: ");
-                                    using (MySqlCommand command = new MySqlCommand("SELECT * FROM itemmaster", conn))
+                                    using (MySqlCommand command = new MySqlCommand("SELECT * FROM ItemMaster", conn))
                                     {
                                         command.Prepare();
                                         using (MySqlDataReader reader = command.ExecuteReader())
@@ -567,7 +590,7 @@ public abstract class Program
                                             Console.WriteLine("Master ID\t\tChild ID\t\tTo Order");
                                             while (reader.Read())
                                             {
-                                                Console.WriteLine($"{reader["masterID"]}\t\t{reader["childID"]}\t\t{reader["toOrder"]}");
+                                                Console.WriteLine($"{reader["masterID"]}\t\t\t{reader["childID"]}\t\t\t{reader["toOrder"]}");
                                             }
                                             Console.WriteLine();
                                         }
@@ -582,7 +605,7 @@ public abstract class Program
                                     Console.WriteLine();
                                     Console.WriteLine("Orders details: ");
                                     using (MySqlCommand sqlCommand =
-                                           new MySqlCommand("SELECT * FROM restaurantorder", conn))
+                                           new MySqlCommand("SELECT * FROM RestaurantOrder", conn))
                                     {
                                         sqlCommand.Prepare();
                                         using (MySqlDataReader reader = sqlCommand.ExecuteReader())
@@ -591,7 +614,7 @@ public abstract class Program
                                             Console.WriteLine("Order ID\t\tQuantity\t\tTo User");
                                             while (reader.Read())
                                             {
-                                                Console.WriteLine($"{reader["orderID"]}\t\t{reader["Quantity"]}\t\t{reader["userID"]}");
+                                                Console.WriteLine($"{reader["orderID"]}\t\t\t{reader["Quantity"]}\t\t\t{reader["userID"]}");
                                             }
                                             Console.WriteLine();
                                         }
@@ -606,7 +629,7 @@ public abstract class Program
                                     Console.WriteLine();
                                     Console.WriteLine("Items details: ");
                                     using (MySqlCommand theCommand =
-                                           new MySqlCommand("SELECT * FROM item", conn))
+                                           new MySqlCommand("SELECT * FROM Item", conn))
                                     {
                                         theCommand.Prepare();
                                         using (MySqlDataReader reader = theCommand.ExecuteReader())
@@ -685,31 +708,33 @@ public abstract class Program
                                         try
                                         {
                                             using (MySqlCommand command = new MySqlCommand(
-                                                       "UPDATE itemmaster SET toOrder = null WHERE masterID = @MasterID",
+                                                       "UPDATE ItemMaster SET toOrder = null WHERE masterID = @MasterID",
                                                        conn))
                                             {
                                                 command.Parameters.AddWithValue("@MasterID", itemMaster.GetMasterId());
                                                 command.Prepare();
-                                                int rows = command.ExecuteNonQuery();
-                                                if (rows == 1)
+                                                var rows = command.ExecuteNonQuery();
+                                                switch (rows)
                                                 {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} row affected.");
-                                                }
-                                                else if (rows > 1)
-                                                {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} rows affected.");
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("There is a problem with database manipulation!");
+                                                    case 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} row affected.");
+                                                        break;
+                                                    case > 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} rows affected.");
+                                                        break;
+                                                    default:
+                                                        Console.WriteLine("No changes happened to the database.");
+                                                        break;
                                                 }
                                             }
                                         }
-                                        catch
+                                        catch (MySqlException exception)
                                         {
                                             Console.WriteLine("Failed to execute an operation in database!");
+                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            Console.WriteLine($"Error message: \n{exception.Message}");
                                         }
                                     }
                                     else
@@ -727,55 +752,88 @@ public abstract class Program
                                 try
                                 {
                                     using (MySqlCommand sqlCommand = new MySqlCommand(
-                                               "DELETE FROM restaurantorder WHERE orderID = @OrderID", conn))
+                                               "DELETE FROM RestaurantOrder WHERE orderID = @OrderID", conn))
                                     {
                                         sqlCommand.Parameters.AddWithValue("@OrderID", order.GetOrderId());
                                         sqlCommand.Prepare();
-                                        int rows = sqlCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = sqlCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
-                                catch
+                                catch (MySqlException exception)
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
+                                    Console.WriteLine($"Error message: \n{exception.Message}");
                                 }
                                 bool removed = itemMasters.Remove(itemMaster);
                                 try
                                 {
                                     using (MySqlCommand sqlCommand = new MySqlCommand(
-                                               "DELETE FROM itemmaster WHERE masterID = @MasterID", conn))
+                                               "DELETE FROM ItemMaster WHERE masterID = @MasterID", conn))
                                     {
                                         sqlCommand.Parameters.AddWithValue("@MasterID", itemMaster.GetMasterId());
                                         sqlCommand.Prepare();
-                                        int rows = sqlCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = sqlCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
-                                catch
+                                catch (MySqlException e)
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
+                                    Console.WriteLine($"Error message: \n{e.Message}");
+                                }
+                                try
+                                {
+                                    using (MySqlCommand command =
+                                           new MySqlCommand("DELETE FROM Item WHERE qID = @ItemId", conn))
+                                    {
+                                        command.Parameters.AddWithValue("@ItemId", itemMaster.GetMasterId());
+                                        command.Prepare();
+                                        int rows = command.ExecuteNonQuery();
+                                        switch (rows)
+                                        {
+                                            case 1:
+                                                Console.WriteLine(
+                                                    $"Successfully deleted item and {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine(
+                                                    $"Successfully deleted item and {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("Nothing happened to the database.");
+                                                break;
+                                        }
+                                    }
+                                }
+                                catch (MySqlException exception)
+                                {
+                                    Console.WriteLine("Failed to execute an operation in the database.");
+                                    Console.WriteLine($"Message: {exception.Message}");
                                 }
                                 if (success && isRemoved && !operation.Equals(null) && removed)
                                 {
@@ -798,32 +856,33 @@ public abstract class Program
                                         try
                                         {
                                             using (MySqlCommand theCommand =
-                                                   new MySqlCommand(
-                                                       "DELETE FROM Item WHERE qID = @ItemID", conn))
+                                                   new MySqlCommand("DELETE FROM Item WHERE qID = @ItemID", conn))
                                             {
                                                 theCommand.Parameters.AddWithValue("@ItemID",
                                                     penders[j].GetItem().GetItemId());
                                                 theCommand.Prepare();
-                                                int rows = theCommand.ExecuteNonQuery();
-                                                if (rows == 1)
+                                                var rows = theCommand.ExecuteNonQuery();
+                                                switch (rows)
                                                 {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} row affected.");
-                                                }
-                                                else if (rows > 1)
-                                                {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} rows affected.");
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("There is a problem with database manipulation!");
+                                                    case 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} row affected.");
+                                                        break;
+                                                    case > 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} rows affected.");
+                                                        break;
+                                                    default:
+                                                        Console.WriteLine("No changes happened to the database.");
+                                                        break;
                                                 }
                                             }
                                         }
-                                        catch
+                                        catch (MySqlException exception)
                                         {
                                             Console.WriteLine("Failed to execute an operation in database!");
+                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            Console.WriteLine($"Error message: \n{exception.Message}");
                                         }
                                     }
                                 }
@@ -835,7 +894,6 @@ public abstract class Program
                                         penders.RemoveAt(sizer);
                                         pendings.RemoveAt(sizer);
                                     }
-
                                     Console.WriteLine("The items upon your request has been removed.");
                                 }
                                 else
@@ -855,32 +913,6 @@ public abstract class Program
                                     order = theItem;
                                     Console.WriteLine($"The order is found at location {orderId1} in the main list.");
                                     theDictionary[0] = true;
-                                    Console.WriteLine();
-                                    Console.WriteLine("Order ID found from database: ");
-                                    try
-                                    {
-                                        using (MySqlCommand sqlCommand = new MySqlCommand(
-                                                   "SELECT orderID FROM restaurantorder WHERE orderID = @OrderID",
-                                                   conn))
-                                        {
-                                            sqlCommand.Parameters.AddWithValue("@OrderID", theItem.GetOrderId());
-                                            sqlCommand.Prepare();
-                                            using (MySqlDataReader reader = sqlCommand.ExecuteReader())
-                                            {
-                                                Console.WriteLine();
-                                                Console.WriteLine("Order ID\t\tQuantity\t\tTo User");
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine($"{reader["orderID"]}\t\t{reader["Quantity"]}\t\t{reader["userID"]}");
-                                                }
-                                                Console.WriteLine();
-                                            }
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation in database!");
-                                    }
                                     break;
                                 }
                             }
@@ -891,59 +923,6 @@ public abstract class Program
                                     Console.WriteLine(
                                         $"The order is found at location {myItem.GetMasterId()} in item master list.");
                                     theDictionary[1] = true;
-                                    Console.WriteLine();
-                                    Console.WriteLine("Item Master ID found from the database: ");
-                                    try
-                                    {
-                                        using (MySqlCommand printCommand =
-                                               new MySqlCommand(
-                                                   "SELECT masterID FROM itemmatser WHERE masterID = @MasterID", conn))
-                                        {
-                                            printCommand.Parameters.AddWithValue("@MasterID", myItem.GetMasterId());
-                                            printCommand.Prepare();
-                                            using (MySqlDataReader reader = printCommand.ExecuteReader())
-                                            {
-                                                Console.WriteLine();
-                                                Console.WriteLine("Master ID\t\tChild ID\t\tTo Order");
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine($"{reader["masterID"]}\t\t{reader["childID"]}\t\t{reader["toOrder"]}");
-                                                }
-                                                Console.WriteLine();
-                                            }
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation from the database!");
-                                    }
-                                    Console.WriteLine();
-                                    Console.WriteLine("Item found from the database: ");
-                                    try
-                                    {
-                                        using (MySqlCommand findingCommand =
-                                               new MySqlCommand(
-                                                   "SELECT qID FROM Item WHERE qID = @FindID", conn))
-                                        {
-                                            findingCommand.Parameters.AddWithValue("@FindID",
-                                                myItem.GetItem().GetItemId());
-                                            findingCommand.Prepare();
-                                            using (MySqlDataReader reader = findingCommand.ExecuteReader())
-                                            {
-                                                Console.WriteLine();
-                                                Console.WriteLine("Item ID\t\tName\t\tCategory");
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine($"{reader["qID"]}\t\t{reader["Name"]}\t\t{reader["Category"]}");
-                                                }
-                                                Console.WriteLine();
-                                            }
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation from the database!");
-                                    }
                                     break;
                                 }
                             }
@@ -972,33 +951,22 @@ public abstract class Program
                                     try
                                     {
                                         using (MySqlCommand printCommand = new MySqlCommand(
-                                                   "SELECT M.masterID, I.Name, I.Category, O.orderID, O.Quantity FROM item AS I, itemmaster AS M, restaurantorder AS O WHERE I.qID = @ItemID AND M.masterID = @MasterID AND O.orderID = @OrderID",
+                                                   "SELECT M.masterID, I.qID, I.Name, I.Category, O.orderID, O.Quantity FROM Item AS I, ItemMaster AS M, RestaurantOrder AS O WHERE I.qID = @ItemID AND M.masterID = @MasterID AND O.orderID = @OrderID",
                                                    conn))
                                         {
                                             printCommand.Parameters.AddWithValue("@MasterID", t.GetMasterId());
                                             printCommand.Parameters.AddWithValue("@ItemID", t.GetItem().GetItemId());
                                             printCommand.Parameters.AddWithValue("@OrderID", t.GetOrder().GetOrderId());
                                             printCommand.Prepare();
-                                            int rows = printCommand.ExecuteNonQuery();
                                             using (MySqlDataReader reader = printCommand.ExecuteReader())
                                             {
+                                                Console.WriteLine();
+                                                Console.WriteLine("Master ID\t\tChild ID\t\tName\t\tCategory\t\tOrder ID\t\tQuantity");
                                                 while (reader.Read())
                                                 {
-                                                    Console.WriteLine(reader);
+                                                    Console.WriteLine($"{reader["masterID"]}\t\t\t{reader["qID"]}\t\t\t{reader["Name"]}\t\t{reader["Category"]}\t\t\t{reader["orderID"]}\t\t\t{reader["Quantity"]}");
                                                 }
-                                            }
-
-                                            if (rows == 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                Console.WriteLine();
                                             }
                                         }
                                     }
@@ -1006,36 +974,24 @@ public abstract class Program
                                     {
                                         Console.WriteLine("Failed to execute an operation from the database!");
                                     }
-
                                     Console.WriteLine("Another information retrieved from the database: ");
                                     try
                                     {
                                         using (MySqlCommand command = new MySqlCommand(
-                                                   "SELECT L.userID, U.customerID, L.toOrder, O.Quantity, L.historyDate FROM orderline AS L, restaurantuser AS U, restaurantorder AS O WHERE L.toOrder = @Order AND L.userID = U.pID AND L.toOrder = O.orderID",
+                                                   "SELECT L.userID, U.customerID, L.toOrder, O.Quantity, L.historyDate FROM OrderLine AS L, RestaurantUser AS U, RestaurantOrder AS O WHERE L.toOrder = @Order AND L.userID = U.pID AND L.toOrder = O.orderID",
                                                    conn))
                                         {
                                             command.Parameters.AddWithValue("@Order", t.GetOrder().GetOrderId());
                                             command.Prepare();
-                                            int rows = command.ExecuteNonQuery();
                                             using (MySqlDataReader reader = command.ExecuteReader())
                                             {
+                                                Console.WriteLine();
+                                                Console.WriteLine("User ID\t\tFor Customer ID\t\tTo Order ID\t\tQuantity\t\tLast Created On");
                                                 while (reader.Read())
                                                 {
-                                                    Console.WriteLine(reader);
+                                                    Console.WriteLine($"{reader["userID"]}\t\t\t{reader["customerID"]}\t\t{reader["toOrder"]}\t\t\t{reader["Quantity"]}\t\t\t{reader["historyDate"]}");
                                                 }
-                                            }
-
-                                            if (rows == 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                Console.WriteLine();
                                             }
                                         }
                                     }
@@ -1043,32 +999,30 @@ public abstract class Program
                                     {
                                         Console.WriteLine("Failed to execute an operation from the database!");
                                     }
-
                                     break;
                                 }
                             }
-
                             break;
                         case 6:
                             user1.ClearOrder();
                             try
                             {
                                 using (MySqlCommand dangerousCommand =
-                                       new MySqlCommand("DELETE FROM restaurantorder", conn))
+                                       new MySqlCommand("DELETE FROM RestaurantOrder", conn))
                                 {
                                     dangerousCommand.Prepare();
-                                    int rows = dangerousCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = dangerousCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            break;
                                     }
                                 }
                             }
@@ -1076,28 +1030,27 @@ public abstract class Program
                             {
                                 Console.WriteLine("Failed to execute an operation from the database!");
                             }
-
                             break;
                         case 7:
                             orderLine.ClearOrderLine();
                             try
                             {
                                 using (MySqlCommand clearingCommand =
-                                       new MySqlCommand("DELETE FROM orderline", conn))
+                                       new MySqlCommand("DELETE FROM OrderLine", conn))
                                 {
                                     clearingCommand.Prepare();
-                                    int rows = clearingCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = clearingCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            break;
                                     }
                                 }
                             }
@@ -1105,61 +1058,93 @@ public abstract class Program
                             {
                                 Console.WriteLine("Failed to execute an operation from the database!");
                             }
-
+                            try
+                            {
+                                using (MySqlCommand itemDeleterCommand = new MySqlCommand("DELETE FROM Item", conn))
+                                {
+                                    itemDeleterCommand.Prepare();
+                                    int rows = itemDeleterCommand.ExecuteNonQuery();
+                                    switch (rows)
+                                    {
+                                        case 1: 
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1: 
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("Nothing happened in the database.");
+                                            break;
+                                    }
+                                }
+                            }
+                            catch (MySqlException e){
+                                Console.WriteLine("Failed to execute an operation in the database!");
+                                Console.WriteLine($"Message: \n{e.Message}");
+                            }
                             break;
                         case 8:
                             Console.WriteLine("Details found: ");
-                            foreach (User myVariable in users)
+                            user1.Display();
+                            Console.WriteLine();
+                            Console.WriteLine("Information found from the database: ");
+                            try
                             {
-                                if (myVariable.Equals(user1))
+                                using (MySqlCommand printerCommand =
+                                       new MySqlCommand("SELECT * FROM Customer, RestaurantUser", conn))
                                 {
-                                    myVariable.Display();
-                                    Console.WriteLine("Information found from the database: ");
-                                    try
+                                    printerCommand.Prepare();
+                                    using (MySqlDataReader reader = printerCommand.ExecuteReader())
                                     {
-                                        using (MySqlCommand printerCommand =
-                                               new MySqlCommand(
-                                                   "SELECT C.Name, C.ID, C.DOB, C.Email, C.Phone, U.Password FROM customer C, restaurantuser U WHERE C.ID = @Customer AND U.pID = @User",
-                                                   conn))
+                                        Console.WriteLine();
+                                        Console.WriteLine("Name\t\tID\t\tDate of birth\t\tEmail\t\t\t\tPhone\t\tPassword");
+                                        while (reader.Read())
                                         {
-                                            printerCommand.Parameters.AddWithValue("@Customer",
-                                                myVariable.GetCustomer().GetId());
-                                            printerCommand.Parameters.AddWithValue("@User", myVariable.GetUserId());
-                                            printerCommand.Prepare();
-                                            int rows = printerCommand.ExecuteNonQuery();
-                                            using (MySqlDataReader reader = printerCommand.ExecuteReader())
+                                            if (Convert.ToInt64(reader["ID"]) == user1.GetCustomer().GetId() ||
+                                                Convert.ToInt64(reader["pID"]) == user1.GetUserId())
                                             {
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine(reader);
-                                                }
-                                            }
-
-                                            if (rows == 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                Console.WriteLine($"{reader["Name"]}\t{reader["ID"]}\t{reader["DOB"]}\t{reader["Email"]}\t{reader["Phone"]}\t{reader["Password"]}");
                                             }
                                             else
                                             {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                Console.WriteLine("Hidden\t\tHidden\t\tThe Hidden\t\tHidden\t\t\t\tHidden\t\tHidden");
                                             }
                                         }
+                                        Console.WriteLine();
                                     }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation from the database!");
-                                    }
-
-                                    break;
                                 }
                             }
-
+                            catch
+                            {
+                                Console.WriteLine("Failed to execute an operation from the database!");
+                            }
                             break;
                         case 9:
+                            try 
+                            {
+                                using (MySqlCommand makingSure = new MySqlCommand("DELETE FROM OrderLine WHERE toOrder = null OR userID = null", conn))
+                                {
+                                    makingSure.Prepare();
+                                    int rows = makingSure.ExecuteNonQuery();
+                                    if (rows == 1)
+                                    {
+                                        Console.WriteLine($"Successfully executed operation and {rows} row affected.");
+                                    }
+                                    else if (rows > 1)
+                                    {
+                                        Console.WriteLine($"Successfully executed operation and {rows} rows affected.");
+                                    }
+                                    else 
+                                    {
+                                        Console.WriteLine("No changes happened to the database.");
+                                    }
+                                }
+                            }
+                            catch 
+                            {
+                                Console.WriteLine("Failed to execute database command!");
+                                Console.WriteLine("There is a problem with the database!");
+                            }
                             User servedUser = user1;
                             Dictionary<int, bool> dictionary = new Dictionary<int, bool>();
                             foreach (Order myItem in orders)
@@ -1171,19 +1156,17 @@ public abstract class Program
                                     break;
                                 }
                             }
-
                             Order isDeleted = user1.DeleteOrder(order);
                             if (!isDeleted.Equals(null) && isDeleted.Equals(order))
                             {
                                 dictionary[1] = true;
                             }
-
                             if (dictionary[0])
                             {
                                 try
                                 {
                                     using (MySqlCommand deleteCommand = new MySqlCommand(
-                                               "DELETE FROM restaurantorder WHERE orderID = @Order", conn))
+                                               "DELETE FROM RestaurantOrder WHERE orderID = @Order", conn))
                                     {
                                         deleteCommand.Parameters.AddWithValue("@Order", order.GetOrderId());
                                         deleteCommand.Prepare();
@@ -1198,7 +1181,7 @@ public abstract class Program
                                         }
                                         else
                                         {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            Console.WriteLine("No changes happened to the database.");
                                         }
                                     }
                                 }
@@ -1206,19 +1189,16 @@ public abstract class Program
                                 {
                                     Console.WriteLine("Failed to execute an operation from the database!");
                                 }
-
                                 orders.Remove(order);
                             }
-
                             if (!dictionary[1])
                             {
                                 servedUser = orderLine.PollUser();
                             }
-
                             try
                             {
                                 using (MySqlCommand pollingCommand = new MySqlCommand(
-                                           "DELETE FROM orderline WHERE toOrder = @Order", conn))
+                                           "DELETE FROM OrderLine WHERE toOrder = @Order", conn))
                                 {
                                     pollingCommand.Parameters.AddWithValue("@Order", orderLine.GetOrder().GetOrderId());
                                     pollingCommand.Prepare();
@@ -1233,7 +1213,7 @@ public abstract class Program
                                     }
                                     else
                                     {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        Console.WriteLine("No changes happened to the database.");
                                     }
                                 }
                             }
@@ -1241,20 +1221,48 @@ public abstract class Program
                             {
                                 Console.WriteLine("Failed to execute an operation from the database!");
                             }
-
                             Order servedOrder = orderLine.PollOrder();
                             Console.WriteLine(
                                 $"The order {servedOrder.GetOrderId()} has been served to {servedUser.GetCustomer().GetName()}.");
                             break;
                         case 10:
                             orderLine.GetOrder().Display(); //This function works when first order in the Queue exists
+                            try
+                            {
+                                Console.WriteLine("Order Line details retrieved from the database: \n");
+                                using (MySqlCommand tryCommand = new MySqlCommand("SELECT * FROM OrderLine", conn))
+                                {
+                                    tryCommand.Prepare();
+                                    using (MySqlDataReader tryReader = tryCommand.ExecuteReader())
+                                    {
+                                        Console.WriteLine();
+                                        Console.WriteLine("Order ID\t\tTo User\t\tCreation Date");
+                                        while (tryReader.Read())
+                                        {
+                                            if (Convert.ToInt64(tryReader["toOrder"]) <= 1 ||
+                                                Convert.ToInt64(tryReader["userID"]) <= 1)
+                                            {
+                                                Console.WriteLine(
+                                                    $"{tryReader["toOrder"]}\t\t\t{tryReader["userID"]}\t\t\t{tryReader["historyDate"]}");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("Hidden\t\tHidden\t\tHidden");
+                                            }
+                                        }
+                                        Console.WriteLine();
+                                    }
+                                }
+                            }
+                            catch (MySqlException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
                             break;
                         case 11:
-                            orderLine.CheckLastOrder()
-                                .Display(); //This function works when the order gets processed from the Queue
+                            orderLine.CheckLastOrder().Display(); //This function works when the order gets processed
                             break;
                     }
-
                     Console.WriteLine("Choose from the restaurant menu below: ");
                     Console.WriteLine("(0) Exit");
                     Console.WriteLine("(1) Add Order");
@@ -1272,7 +1280,7 @@ public abstract class Program
                     answer2 = Convert.ToInt32(Console.ReadLine());
                 }
             }
-            else if (authenticate[0] || authenticate[1] || authenticate[2])
+            else if (authenticate[0] || (authenticate[1] && authenticate[2]))
             {
                 Console.WriteLine("Choose from the restaurant menu below: ");
                 Console.WriteLine("(0) Exit");
@@ -1301,30 +1309,32 @@ public abstract class Program
                             try
                             {
                                 using (MySqlCommand itemCommand = new MySqlCommand(
-                                           "INSERT INTO item VALUES (@Count, @Name, @Category)", conn))
+                                           "INSERT INTO Item VALUES (@Count, @Name, @Category)", conn))
                                 {
                                     itemCommand.Parameters.AddWithValue("@Count", itemMasters.Count);
                                     itemCommand.Parameters.AddWithValue("@Name", sqlItemName1.Value);
                                     itemCommand.Parameters.AddWithValue("@Category", sqlItemCategory1.Value);
                                     itemCommand.Prepare();
-                                    int rows = itemCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = itemCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException e)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine($"Message: \n{e.Message}");
                             }
                             Console.Write("Please enter an item quantity: ");
                             int itemQuantity1 = Convert.ToInt32(Console.ReadLine());
@@ -1336,63 +1346,67 @@ public abstract class Program
                             try
                             {
                                 using (MySqlCommand orderCommand = new MySqlCommand(
-                                           "INSERT INTO restaurantorder VALUES (@Count, @Quantity, @UserId)",
+                                           "INSERT INTO RestaurantOrder VALUES (@Count, @Quantity, @UserId)",
                                            conn))
                                 {
                                     orderCommand.Parameters.AddWithValue("@Count", orders.Count);
                                     orderCommand.Parameters.AddWithValue("@Quantity", sqlItemQuantity1.Value);
                                     orderCommand.Parameters.AddWithValue("@UserId", user1.GetUserId());
-                                    int rows = orderCommand.ExecuteNonQuery();
                                     orderCommand.Prepare();
-                                    if (rows == 1)
+                                    var rows = orderCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException ex)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine($"Message: \n{ex.Message}");
                             }
                             orders.Add(order);
                             itemMaster = new ItemMaster(item, order, itemMasters.Count);
-                            itemMasters.Add(itemMaster);
                             try
                             {
                                 using (MySqlCommand itemMasterCommand = new MySqlCommand(
-                                           "INSERT INTO itemmaster VALUES (@Count, @Quantity, @UserId)", conn))
+                                           "INSERT INTO ItemMaster VALUES (@Count, @Child, @Toy)", conn))
                                 {
                                     itemMasterCommand.Parameters.AddWithValue("@Count", itemMasters.Count);
-                                    itemMasterCommand.Parameters.AddWithValue("@Quantity", sqlItemQuantity1.Value);
-                                    itemMasterCommand.Parameters.AddWithValue("@UserId", user1.GetUserId());
+                                    itemMasterCommand.Parameters.AddWithValue("@Child", item.GetItemId());
+                                    itemMasterCommand.Parameters.AddWithValue("@Toy", order.GetOrderId());
                                     itemMasterCommand.Prepare();
-                                    int rows = itemMasterCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = itemMasterCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException exception)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine(exception.Message);
                             }
+                            itemMasters.Add(itemMaster);
                             foreach (ItemMaster theVariable in itemMasters)
                             {
                                 if (theVariable.GetMasterId() == item.GetItemId())
@@ -1401,62 +1415,69 @@ public abstract class Program
                                     try
                                     {
                                         using (MySqlCommand editItem = new MySqlCommand(
-                                                   "UPDATE item SET qID = @New WHERE qID = @Old",
+                                                   "UPDATE Item SET qID = @New WHERE qID = @Old",
                                                    conn))
                                         {
                                             editItem.Parameters.AddWithValue("@New", newItemId);
                                             editItem.Parameters.AddWithValue("@Old", item.GetItemId());
                                             editItem.Prepare();
-                                            int rows = editItem.ExecuteNonQuery();
-                                            if (rows == 1)
+                                            var rows = editItem.ExecuteNonQuery();
+                                            switch (rows)
                                             {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                case 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} row affected.");
+                                                    break;
+                                                case > 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} rows affected.");
+                                                    break;
+                                                default:
+                                                    Console.WriteLine("No changes happened to the database.");
+                                                    break;
                                             }
                                         }
                                     }
-                                    catch
+                                    catch (MySqlException ex)
                                     {
                                         Console.WriteLine("Failed to execute an operation in database!");
+                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        Console.WriteLine(ex.Message);
                                     }
                                     try
                                     {
                                         using (MySqlCommand editItemMaster =
                                                new MySqlCommand(
-                                                   "UPDATE itemmaster SET childID = @New WHERE masterID = @Old AND childID = @Child",
+                                                   "UPDATE ItemMaster SET childID = @New WHERE masterID = @Old AND childID = @Child",
                                                    conn))
                                         {
                                             editItemMaster.Parameters.AddWithValue("@New", newItemId);
                                             editItemMaster.Parameters.AddWithValue("@Old", itemMaster.GetMasterId());
                                             editItemMaster.Parameters.AddWithValue("@Child", item.GetItemId());
                                             editItemMaster.Prepare();
-                                            int rows = editItemMaster.ExecuteNonQuery();
-                                            if (rows == 1)
+                                            var rows = editItemMaster.ExecuteNonQuery();
+                                            switch (rows)
                                             {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                case 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} row affected.");
+                                                    break;
+                                                case > 1:
+                                                    Console.WriteLine(
+                                                        $"Operation successful with {rows} rows affected.");
+                                                    break;
+                                                default:
+                                                    Console.WriteLine("No changes happened to the database.");
+                                                    break;
                                             }
                                         }
                                     }
-                                    catch
+                                    catch (MySqlException ex)
                                     {
                                         Console.WriteLine("Failed to execute an operation in database!");
+                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        Console.WriteLine(ex.Message);
                                     }
-
                                     item.SetItemId(newItemId);
                                     theVariable.SetItemId(item); //Refer to Item Master class
                                 }
@@ -1465,31 +1486,32 @@ public abstract class Program
                             {
                                 DateTime date = DateTime.Now;
                                 using (MySqlCommand lineCommand = new MySqlCommand(
-                                           "INSERT INTO orderline VALUES (@UserId, @OrderId, @Date)",
-                                           conn))
+                                           "INSERT INTO OrderLine VALUES (@UserId, @OrderId, @Date)", conn))
                                 {
                                     lineCommand.Parameters.AddWithValue("@UserId", user1.GetUserId());
                                     lineCommand.Parameters.AddWithValue("@OrderId", order.GetOrderId());
-                                    lineCommand.Parameters.AddWithValue("@Date", date);
+                                    lineCommand.Parameters.AddWithValue("@Date", date.Date);
                                     lineCommand.Prepare();
-                                    int rows = lineCommand.ExecuteNonQuery();
-                                    if (rows == 1)
+                                    var rows = lineCommand.ExecuteNonQuery();
+                                    switch (rows)
                                     {
-                                        Console.WriteLine($"Operation successful with {rows} row affected.");
-                                    }
-                                    else if (rows > 1)
-                                    {
-                                        Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        case 1:
+                                            Console.WriteLine($"Operation successful with {rows} row affected.");
+                                            break;
+                                        case > 1:
+                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                            break;
+                                        default:
+                                            Console.WriteLine("No changes happened to the database.");
+                                            break;
                                     }
                                 }
                             }
-                            catch
+                            catch (MySqlException exception)
                             {
                                 Console.WriteLine("Failed to execute an operation in database!");
+                                Console.WriteLine("There is a problem with database manipulation!");
+                                Console.WriteLine(exception.Message);
                             }
                             orderLine.OfferOrder(order);
                             user1.AddOrder(order);
@@ -1521,43 +1543,43 @@ public abstract class Program
                                 Console.Write("Please enter an item category: ");
                                 string itemCategory2 = Console.ReadLine()!;
                                 SqlString sqlItemCategory2 = new SqlString(itemCategory2);
-                                item = new Item(name: itemName2, category: itemCategory2, itemId: itemMasters.Count);
-                                item.SetItemId(itemMasters.Count + 1);
+                                item = new Item(name: itemName2, category: itemCategory2, itemId: itemMasters.Count+1);
                                 try
                                 {
                                     using (MySqlCommand itemCommand = new MySqlCommand(
-                                               "INSERT INTO item VALUES (@Count, @Name, @Category)",
-                                               conn))
+                                               "INSERT INTO Item VALUES (@Count, @Name, @Category)", conn))
                                     {
-                                        itemCommand.Parameters.AddWithValue("@Count", itemMasters.Count);
+                                        itemCommand.Parameters.AddWithValue("@Count", itemMasters.Count+1);
                                         itemCommand.Parameters.AddWithValue("@Name", sqlItemName2.Value);
                                         itemCommand.Parameters.AddWithValue("@Category", sqlItemCategory2.Value);
                                         itemCommand.Prepare();
-                                        int rows = itemCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = itemCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
                                 }
-                                itemMaster = new ItemMaster(item, order, itemMasters.Count);
+                                itemMaster = new ItemMaster(item, order, itemMasters.Count+1);
+                                itemMasters.Add(itemMaster);
                                 try
                                 {
                                     using (MySqlCommand itemMasterCommand =
                                            new MySqlCommand(
-                                               "INSERT INTO itemmaster VALUES (@MasterId, @ItemId, @OrderId)",
+                                               "INSERT INTO ItemMaster VALUES (@MasterId, @ItemId, @OrderId)",
                                                conn))
                                     {
                                         itemMasterCommand.Parameters.AddWithValue("@ItemId", item.GetItemId());
@@ -1565,26 +1587,27 @@ public abstract class Program
                                         itemMasterCommand.Parameters.AddWithValue("@MasterId",
                                             itemMaster.GetMasterId());
                                         itemMasterCommand.Prepare();
-                                        int rows = itemMasterCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = itemMasterCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
-                                catch
+                                catch (MySqlException exception)
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
+                                    Console.WriteLine(exception.Message);
                                 }
-                                itemMasters.Add(itemMaster);
                                 Console.WriteLine(
                                     $"Would you like to add more items to the same order as quantity of {order.GetQuantity()}?");
                                 Console.WriteLine("yes or no?");
@@ -1614,7 +1637,7 @@ public abstract class Program
                                 {
                                     Console.WriteLine();
                                     Console.WriteLine("Item Master details: ");
-                                    using (MySqlCommand command = new MySqlCommand("SELECT * FROM itemmaster", conn))
+                                    using (MySqlCommand command = new MySqlCommand("SELECT * FROM ItemMaster", conn))
                                     {
                                         command.Prepare();
                                         using (MySqlDataReader reader = command.ExecuteReader())
@@ -1623,7 +1646,7 @@ public abstract class Program
                                             Console.WriteLine("Master ID\t\tChild ID\t\tTo Order");
                                             while (reader.Read())
                                             {
-                                                Console.WriteLine($"{reader["masterID"]}\t\t{reader["childID"]}\t\t{reader["toOrder"]}");
+                                                Console.WriteLine($"{reader["masterID"]}\t\t\t{reader["childID"]}\t\t\t{reader["toOrder"]}");
                                             }
                                             Console.WriteLine();
                                         }
@@ -1638,7 +1661,7 @@ public abstract class Program
                                     Console.WriteLine();
                                     Console.WriteLine("Orders details: ");
                                     using (MySqlCommand sqlCommand =
-                                           new MySqlCommand("SELECT * FROM restaurantorder", conn))
+                                           new MySqlCommand("SELECT * FROM RestaurantOrder", conn))
                                     {
                                         sqlCommand.Prepare();
                                         using (MySqlDataReader reader = sqlCommand.ExecuteReader())
@@ -1647,7 +1670,7 @@ public abstract class Program
                                             Console.WriteLine("Order ID\t\tQuantity\t\tTo User");
                                             while (reader.Read())
                                             {
-                                                Console.WriteLine($"{reader["orderID"]}\t\t{reader["Quantity"]}\t\t{reader["userID"]}");
+                                                Console.WriteLine($"{reader["orderID"]}\t\t\t{reader["Quantity"]}\t\t\t{reader["userID"]}");
                                             }
                                             Console.WriteLine();
                                         }
@@ -1662,7 +1685,7 @@ public abstract class Program
                                     Console.WriteLine();
                                     Console.WriteLine("Items details: ");
                                     using (MySqlCommand theCommand =
-                                           new MySqlCommand("SELECT * FROM item", conn))
+                                           new MySqlCommand("SELECT * FROM Item", conn))
                                     {
                                         theCommand.Prepare();
                                         using (MySqlDataReader reader = theCommand.ExecuteReader())
@@ -1708,7 +1731,6 @@ public abstract class Program
                                             myItem.GetItem().Display();
                                             indexer++;
                                         }
-
                                         Console.Write("\nSelect the item by typing the number: ");
                                         int itemSelectorX = Convert.ToInt32(Console.ReadLine());
                                         if (myItem.GetItem().GetItemId() == itemSelectorX)
@@ -1727,7 +1749,6 @@ public abstract class Program
                                                 breaker = false;
                                             }
                                         }
-
                                         Console.WriteLine("Would you like to delete another item?");
                                         Console.WriteLine("yes or no?");
                                         Console.Write("Answer: ");
@@ -1743,31 +1764,33 @@ public abstract class Program
                                         try
                                         {
                                             using (MySqlCommand command = new MySqlCommand(
-                                                       "UPDATE itemmaster SET toOrder = null WHERE masterID = @MasterID",
+                                                       "UPDATE ItemMaster SET toOrder = null WHERE masterID = @MasterID",
                                                        conn))
                                             {
                                                 command.Parameters.AddWithValue("@MasterID", itemMaster.GetMasterId());
                                                 command.Prepare();
-                                                int rows = command.ExecuteNonQuery();
-                                                if (rows == 1)
+                                                var rows = command.ExecuteNonQuery();
+                                                switch (rows)
                                                 {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} row affected.");
-                                                }
-                                                else if (rows > 1)
-                                                {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} rows affected.");
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("There is a problem with database manipulation!");
+                                                    case 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} row affected.");
+                                                        break;
+                                                    case > 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} rows affected.");
+                                                        break;
+                                                    default:
+                                                        Console.WriteLine("No changes happened to the database.");
+                                                        break;
                                                 }
                                             }
                                         }
-                                        catch
+                                        catch (MySqlException exception)
                                         {
                                             Console.WriteLine("Failed to execute an operation in database!");
+                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            Console.WriteLine($"Error message: \n{exception.Message}");
                                         }
                                     }
                                     else
@@ -1775,7 +1798,6 @@ public abstract class Program
                                         Console.WriteLine("Your order will not be deleted upon your request.");
                                         success = false;
                                     }
-
                                     break;
                                 }
                             }
@@ -1786,55 +1808,88 @@ public abstract class Program
                                 try
                                 {
                                     using (MySqlCommand sqlCommand = new MySqlCommand(
-                                               "DELETE FROM restaurantorder WHERE orderID = @OrderID", conn))
+                                               "DELETE FROM RestaurantOrder WHERE orderID = @OrderID", conn))
                                     {
                                         sqlCommand.Parameters.AddWithValue("@OrderID", order.GetOrderId());
                                         sqlCommand.Prepare();
-                                        int rows = sqlCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = sqlCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
-                                catch
+                                catch (MySqlException exception)
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
+                                    Console.WriteLine($"Error message: \n{exception.Message}");
                                 }
                                 bool removed = itemMasters.Remove(itemMaster);
                                 try
                                 {
                                     using (MySqlCommand sqlCommand = new MySqlCommand(
-                                               "DELETE FROM itemmaster WHERE masterID = @MasterID", conn))
+                                               "DELETE FROM ItemMaster WHERE masterID = @MasterID", conn))
                                     {
                                         sqlCommand.Parameters.AddWithValue("@MasterID", itemMaster.GetMasterId());
                                         sqlCommand.Prepare();
-                                        int rows = sqlCommand.ExecuteNonQuery();
-                                        if (rows == 1)
+                                        var rows = sqlCommand.ExecuteNonQuery();
+                                        switch (rows)
                                         {
-                                            Console.WriteLine($"Operation successful with {rows} row affected.");
-                                        }
-                                        else if (rows > 1)
-                                        {
-                                            Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            case 1:
+                                                Console.WriteLine($"Operation successful with {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("No changes happened to the database.");
+                                                break;
                                         }
                                     }
                                 }
-                                catch
+                                catch (MySqlException e)
                                 {
                                     Console.WriteLine("Failed to execute an operation in database!");
+                                    Console.WriteLine("There is a problem with database manipulation!");
+                                    Console.WriteLine($"Error message: \n{e.Message}");
+                                }
+                                try
+                                {
+                                    using (MySqlCommand command =
+                                           new MySqlCommand("DELETE FROM Item WHERE qID = @ItemId", conn))
+                                    {
+                                        command.Parameters.AddWithValue("@ItemId", itemMaster.GetMasterId());
+                                        command.Prepare();
+                                        int rows = command.ExecuteNonQuery();
+                                        switch (rows)
+                                        {
+                                            case 1:
+                                                Console.WriteLine(
+                                                    $"Successfully deleted item and {rows} row affected.");
+                                                break;
+                                            case > 1:
+                                                Console.WriteLine(
+                                                    $"Successfully deleted item and {rows} rows affected.");
+                                                break;
+                                            default:
+                                                Console.WriteLine("Nothing happened to the database.");
+                                                break;
+                                        }
+                                    }
+                                }
+                                catch (MySqlException exception)
+                                {
+                                    Console.WriteLine("Failed to execute an operation in the database.");
+                                    Console.WriteLine($"Message: {exception.Message}");
                                 }
                                 if (success && isRemoved && !operation.Equals(null) && removed)
                                 {
@@ -1857,32 +1912,33 @@ public abstract class Program
                                         try
                                         {
                                             using (MySqlCommand theCommand =
-                                                   new MySqlCommand(
-                                                       "DELETE FROM Item WHERE qID = @ItemID", conn))
+                                                   new MySqlCommand("DELETE FROM Item WHERE qID = @ItemID", conn))
                                             {
                                                 theCommand.Parameters.AddWithValue("@ItemID",
                                                     penders[j].GetItem().GetItemId());
                                                 theCommand.Prepare();
-                                                int rows = theCommand.ExecuteNonQuery();
-                                                if (rows == 1)
+                                                var rows = theCommand.ExecuteNonQuery();
+                                                switch (rows)
                                                 {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} row affected.");
-                                                }
-                                                else if (rows > 1)
-                                                {
-                                                    Console.WriteLine(
-                                                        $"Operation successful with {rows} rows affected.");
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("There is a problem with database manipulation!");
+                                                    case 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} row affected.");
+                                                        break;
+                                                    case > 1:
+                                                        Console.WriteLine(
+                                                            $"Operation successful with {rows} rows affected.");
+                                                        break;
+                                                    default:
+                                                        Console.WriteLine("No changes happened to the database.");
+                                                        break;
                                                 }
                                             }
                                         }
-                                        catch
+                                        catch (MySqlException exception)
                                         {
                                             Console.WriteLine("Failed to execute an operation in database!");
+                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            Console.WriteLine($"Error message: \n{exception.Message}");
                                         }
                                     }
                                 }
@@ -1894,7 +1950,6 @@ public abstract class Program
                                         penders.RemoveAt(sizer);
                                         pendings.RemoveAt(sizer);
                                     }
-
                                     Console.WriteLine("The items upon your request has been removed.");
                                 }
                                 else
@@ -1914,32 +1969,6 @@ public abstract class Program
                                     order = theItem;
                                     Console.WriteLine($"The order is found at location {orderId1} in the main list.");
                                     theDictionary[0] = true;
-                                    Console.WriteLine();
-                                    Console.WriteLine("Order ID found from database: ");
-                                    try
-                                    {
-                                        using (MySqlCommand sqlCommand = new MySqlCommand(
-                                                   "SELECT orderID FROM restaurantorder WHERE orderID = @OrderID",
-                                                   conn))
-                                        {
-                                            sqlCommand.Parameters.AddWithValue("@OrderID", theItem.GetOrderId());
-                                            sqlCommand.Prepare();
-                                            using (MySqlDataReader reader = sqlCommand.ExecuteReader())
-                                            {
-                                                Console.WriteLine();
-                                                Console.WriteLine("Order ID\t\tQuantity\t\tTo User");
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine($"{reader["orderID"]}\t\t{reader["Quantity"]}\t\t{reader["userID"]}");
-                                                }
-                                                Console.WriteLine();
-                                            }
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation in database!");
-                                    }
                                     break;
                                 }
                             }
@@ -1950,59 +1979,6 @@ public abstract class Program
                                     Console.WriteLine(
                                         $"The order is found at location {myItem.GetMasterId()} in item master list.");
                                     theDictionary[1] = true;
-                                    Console.WriteLine();
-                                    Console.WriteLine("Item Master ID found from the database: ");
-                                    try
-                                    {
-                                        using (MySqlCommand printCommand =
-                                               new MySqlCommand(
-                                                   "SELECT masterID FROM itemmatser WHERE masterID = @MasterID", conn))
-                                        {
-                                            printCommand.Parameters.AddWithValue("@MasterID", myItem.GetMasterId());
-                                            printCommand.Prepare();
-                                            using (MySqlDataReader reader = printCommand.ExecuteReader())
-                                            {
-                                                Console.WriteLine();
-                                                Console.WriteLine("Master ID\t\tChild ID\t\tTo Order");
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine($"{reader["masterID"]}\t\t{reader["childID"]}\t\t{reader["toOrder"]}");
-                                                }
-                                                Console.WriteLine();
-                                            }
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation from the database!");
-                                    }
-                                    Console.WriteLine();
-                                    Console.WriteLine("Item found from the database: ");
-                                    try
-                                    {
-                                        using (MySqlCommand findingCommand =
-                                               new MySqlCommand(
-                                                   "SELECT qID FROM Item WHERE qID = @FindID", conn))
-                                        {
-                                            findingCommand.Parameters.AddWithValue("@FindID",
-                                                myItem.GetItem().GetItemId());
-                                            findingCommand.Prepare();
-                                            using (MySqlDataReader reader = findingCommand.ExecuteReader())
-                                            {
-                                                Console.WriteLine();
-                                                Console.WriteLine("Item ID\t\tName\t\tCategory");
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine($"{reader["qID"]}\t\t{reader["Name"]}\t\t{reader["Category"]}");
-                                                }
-                                                Console.WriteLine();
-                                            }
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation from the database!");
-                                    }
                                     break;
                                 }
                             }
@@ -2031,33 +2007,22 @@ public abstract class Program
                                     try
                                     {
                                         using (MySqlCommand printCommand = new MySqlCommand(
-                                                   "SELECT M.masterID, I.Name, I.Category, O.orderID, O.Quantity FROM item AS I, itemmaster AS M, restaurantorder AS O WHERE I.qID = @ItemID AND M.masterID = @MasterID AND O.orderID = @OrderID",
+                                                   "SELECT M.masterID, I.qID, I.Name, I.Category, O.orderID, O.Quantity FROM Item AS I, ItemMaster AS M, RestaurantOrder AS O WHERE I.qID = @ItemID AND M.masterID = @MasterID AND O.orderID = @OrderID",
                                                    conn))
                                         {
                                             printCommand.Parameters.AddWithValue("@MasterID", t.GetMasterId());
                                             printCommand.Parameters.AddWithValue("@ItemID", t.GetItem().GetItemId());
                                             printCommand.Parameters.AddWithValue("@OrderID", t.GetOrder().GetOrderId());
                                             printCommand.Prepare();
-                                            int rows = printCommand.ExecuteNonQuery();
                                             using (MySqlDataReader reader = printCommand.ExecuteReader())
                                             {
+                                                Console.WriteLine();
+                                                Console.WriteLine("Master ID\t\tChild ID\t\tName\t\tCategory\t\tOrder ID\t\tQuantity");
                                                 while (reader.Read())
                                                 {
-                                                    Console.WriteLine(reader);
+                                                    Console.WriteLine($"{reader["masterID"]}\t\t\t{reader["qID"]}\t\t\t{reader["Name"]}\t\t{reader["Category"]}\t\t\t{reader["orderID"]}\t\t\t{reader["Quantity"]}");
                                                 }
-                                            }
-
-                                            if (rows == 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                Console.WriteLine();
                                             }
                                         }
                                     }
@@ -2065,36 +2030,24 @@ public abstract class Program
                                     {
                                         Console.WriteLine("Failed to execute an operation from the database!");
                                     }
-
                                     Console.WriteLine("Another information retrieved from the database: ");
                                     try
                                     {
                                         using (MySqlCommand command = new MySqlCommand(
-                                                   "SELECT L.userID, U.customerID, L.toOrder, O.Quantity, L.historyDate FROM orderline AS L, restaurantuser AS U, restaurantorder AS O WHERE L.toOrder = @Order AND L.userID = U.pID AND L.toOrder = O.orderID",
+                                                   "SELECT L.userID, U.customerID, L.toOrder, O.Quantity, L.historyDate FROM OrderLine AS L, RestaurantUser AS U, RestaurantOrder AS O WHERE L.toOrder = @Order AND L.userID = U.pID AND L.toOrder = O.orderID",
                                                    conn))
                                         {
                                             command.Parameters.AddWithValue("@Order", t.GetOrder().GetOrderId());
                                             command.Prepare();
-                                            int rows = command.ExecuteNonQuery();
                                             using (MySqlDataReader reader = command.ExecuteReader())
                                             {
+                                                Console.WriteLine();
+                                                Console.WriteLine("User ID\t\tFor Customer ID\t\tTo Order ID\t\tQuantity\t\tLast Created On");
                                                 while (reader.Read())
                                                 {
-                                                    Console.WriteLine(reader);
+                                                    Console.WriteLine($"{reader["userID"]}\t\t\t{reader["customerID"]}\t\t{reader["toOrder"]}\t\t\t{reader["Quantity"]}\t\t\t{reader["historyDate"]}");
                                                 }
-                                            }
-
-                                            if (rows == 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                Console.WriteLine();
                                             }
                                         }
                                     }
@@ -2102,65 +2055,72 @@ public abstract class Program
                                     {
                                         Console.WriteLine("Failed to execute an operation from the database!");
                                     }
-
                                     break;
                                 }
                             }
-
                             break;
                         case 6:
                             Console.WriteLine("Details found: ");
-                            foreach (User myVariable in users)
+                            user1.Display();
+                            Console.WriteLine();
+                            Console.WriteLine("Information found from the database: ");
+                            try
                             {
-                                if (myVariable.Equals(user1))
+                                using (MySqlCommand printerCommand =
+                                       new MySqlCommand("SELECT * FROM Customer, RestaurantUser", conn))
                                 {
-                                    myVariable.Display();
-                                    Console.WriteLine("Information found from the database: ");
-                                    try
+                                    printerCommand.Prepare();
+                                    using (MySqlDataReader reader = printerCommand.ExecuteReader())
                                     {
-                                        using (MySqlCommand printerCommand =
-                                               new MySqlCommand(
-                                                   "SELECT C.Name, C.ID, C.DOB, C.Email, C.Phone, U.Password FROM customer C, restaurantuser U WHERE C.ID = @Customer AND U.pID = @User",
-                                                   conn))
+                                        Console.WriteLine();
+                                        Console.WriteLine("Name\t\tID\t\tDate of birth\t\tEmail\t\t\t\tPhone\t\tPassword");
+                                        while (reader.Read())
                                         {
-                                            printerCommand.Parameters.AddWithValue("@Customer",
-                                                myVariable.GetCustomer().GetId());
-                                            printerCommand.Parameters.AddWithValue("@User", myVariable.GetUserId());
-                                            printerCommand.Prepare();
-                                            int rows = printerCommand.ExecuteNonQuery();
-                                            using (MySqlDataReader reader = printerCommand.ExecuteReader())
+                                            if (Convert.ToInt64(reader["ID"]) == user1.GetCustomer().GetId() ||
+                                                Convert.ToInt64(reader["pID"]) == user1.GetUserId())
                                             {
-                                                while (reader.Read())
-                                                {
-                                                    Console.WriteLine(reader);
-                                                }
-                                            }
-
-                                            if (rows == 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} row affected.");
-                                            }
-                                            else if (rows > 1)
-                                            {
-                                                Console.WriteLine($"Operation successful with {rows} rows affected.");
+                                                Console.WriteLine($"{reader["Name"]}\t{reader["ID"]}\t{reader["DOB"]}\t{reader["Email"]}\t{reader["Phone"]}\t{reader["Password"]}");
                                             }
                                             else
                                             {
-                                                Console.WriteLine("There is a problem with database manipulation!");
+                                                Console.WriteLine("Hidden\t\tHidden\t\tThe Hidden\t\tHidden\t\t\t\tHidden\t\tHidden");
                                             }
                                         }
+                                        Console.WriteLine();
                                     }
-                                    catch
-                                    {
-                                        Console.WriteLine("Failed to execute an operation from the database!");
-                                    }
-
-                                    break;
                                 }
                             }
-
+                            catch
+                            {
+                                Console.WriteLine("Failed to execute an operation from the database!");
+                            }
                             break;
                         case 7:
+                            try 
+                            {
+                                using (MySqlCommand makingSure = new MySqlCommand("DELETE FROM OrderLine WHERE toOrder = null OR userID = null", conn))
+                                {
+                                    makingSure.Prepare();
+                                    int rows = makingSure.ExecuteNonQuery();
+                                    if (rows == 1)
+                                    {
+                                        Console.WriteLine($"Successfully executed operation and {rows} row affected.");
+                                    }
+                                    else if (rows > 1)
+                                    {
+                                        Console.WriteLine($"Successfully executed operation and {rows} rows affected.");
+                                    }
+                                    else 
+                                    {
+                                        Console.WriteLine("No changes happened to the database.");
+                                    }
+                                }
+                            }
+                            catch 
+                            {
+                                Console.WriteLine("Failed to execute database command!");
+                                Console.WriteLine("There is a problem with the database!");
+                            }
                             User servedUser = user1;
                             Dictionary<int, bool> dictionary = new Dictionary<int, bool>();
                             foreach (Order myItem in orders)
@@ -2172,19 +2132,17 @@ public abstract class Program
                                     break;
                                 }
                             }
-
                             Order isDeleted = user1.DeleteOrder(order);
                             if (!isDeleted.Equals(null) && isDeleted.Equals(order))
                             {
                                 dictionary[1] = true;
                             }
-
                             if (dictionary[0])
                             {
                                 try
                                 {
                                     using (MySqlCommand deleteCommand = new MySqlCommand(
-                                               "DELETE FROM restaurantorder WHERE orderID = @Order", conn))
+                                               "DELETE FROM RestaurantOrder WHERE orderID = @Order", conn))
                                     {
                                         deleteCommand.Parameters.AddWithValue("@Order", order.GetOrderId());
                                         deleteCommand.Prepare();
@@ -2199,7 +2157,7 @@ public abstract class Program
                                         }
                                         else
                                         {
-                                            Console.WriteLine("There is a problem with database manipulation!");
+                                            Console.WriteLine("No changes happened to the database.");
                                         }
                                     }
                                 }
@@ -2207,19 +2165,16 @@ public abstract class Program
                                 {
                                     Console.WriteLine("Failed to execute an operation from the database!");
                                 }
-
                                 orders.Remove(order);
                             }
-
                             if (!dictionary[1])
                             {
                                 servedUser = orderLine.PollUser();
                             }
-
                             try
                             {
                                 using (MySqlCommand pollingCommand = new MySqlCommand(
-                                           "DELETE FROM orderline WHERE toOrder = @Order", conn))
+                                           "DELETE FROM OrderLine WHERE toOrder = @Order", conn))
                                 {
                                     pollingCommand.Parameters.AddWithValue("@Order", orderLine.GetOrder().GetOrderId());
                                     pollingCommand.Prepare();
@@ -2234,7 +2189,7 @@ public abstract class Program
                                     }
                                     else
                                     {
-                                        Console.WriteLine("There is a problem with database manipulation!");
+                                        Console.WriteLine("No changes happened to the database.");
                                     }
                                 }
                             }
@@ -2242,16 +2197,45 @@ public abstract class Program
                             {
                                 Console.WriteLine("Failed to execute an operation from the database!");
                             }
-
                             Order servedOrder = orderLine.PollOrder();
                             Console.WriteLine(
                                 $"The order {servedOrder.GetOrderId()} has been served to {servedUser.GetCustomer().GetName()}.");
                             break;
                         case 8:
                             orderLine.GetOrder().Display(); //This function works when first order in the Queue exists
+                            try
+                            {
+                                Console.WriteLine("Order Line details retrieved from the database: \n");
+                                using (MySqlCommand tryCommand = new MySqlCommand("SELECT * FROM OrderLine", conn))
+                                {
+                                    tryCommand.Prepare();
+                                    using (MySqlDataReader tryReader = tryCommand.ExecuteReader())
+                                    {
+                                        Console.WriteLine();
+                                        Console.WriteLine("Order ID\t\tTo User\t\tCreation Date");
+                                        while (tryReader.Read())
+                                        {
+                                            if (Convert.ToInt64(tryReader["toOrder"]) <= 1 ||
+                                                Convert.ToInt64(tryReader["userID"]) <= 1)
+                                            {
+                                                Console.WriteLine(
+                                                    $"{tryReader["toOrder"]}\t\t\t{tryReader["userID"]}\t\t\t{tryReader["historyDate"]}");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("Hidden\t\tHidden\t\tHidden");
+                                            }
+                                        }
+                                        Console.WriteLine();
+                                    }
+                                }
+                            }
+                            catch (MySqlException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
                             break;
                     }
-
                     Console.WriteLine("Choose from the restaurant menu below: ");
                     Console.WriteLine("(0) Exit");
                     Console.WriteLine("(1) Add Order");
@@ -2275,10 +2259,9 @@ public abstract class Program
                 conn.Close();
                 Process.GetCurrentProcess().Kill();
             }
-
             conn.Close();
         }
-        catch (SqlException theSqlException)
+        catch (MySqlException theSqlException)
         {
             Console.WriteLine("Failed to open Database connection!");
             Console.WriteLine("There's a problem with sql as stated in the message below: ");
@@ -2288,10 +2271,6 @@ public abstract class Program
         {
             Console.WriteLine("There's a problem with the database as stated in the message below: ");
             Console.WriteLine(theDbException.Message);
-        }
-        catch (InvalidOperationException theInvalidOperationException)
-        {
-            Console.WriteLine(theInvalidOperationException.Message);
         }
         catch (NullReferenceException theNullException)
         {
@@ -2303,10 +2282,6 @@ public abstract class Program
             Console.WriteLine(
                 "An item has been inserted into an array outside of its size range as stated in the message below: ");
             Console.WriteLine(theIndexOutOfRangeException.Message);
-        }
-        catch (FormatException theFormatException)
-        {
-            Console.WriteLine(theFormatException.Message);
         }
         catch (InvalidCastException theInvalidCastException)
         {
@@ -2794,8 +2769,6 @@ public class OrderLine
     public void PrintLine()
     {
         Console.WriteLine();
-        Console.WriteLine("Order Line: ");
-        _orders.printQueue(); //Replace it with SQL Query
         Console.WriteLine("Users:");
         int counter = 0;
         foreach (User user in _users)

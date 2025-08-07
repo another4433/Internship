@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>View Order</title>
+        <meta title="Dynamics" content="width=device-width; initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="RestaurantView.css">
+    </head>
+    <body class="pico">
+        <div name="Order head">
+            <h1 name="Order title">Order Details</h1>
+            <img name="Order image" src="images.png" alt="Delete Order" id="theDelete">
+        </div><br>
+        <table border="1px" class="container" name="itemMaster">
+            <tr><th>Item Master ID</th><td id="masterID" title="Just a unique number"></td></tr>
+            <tr>
+                <th>Order ID</th>
+                <td id="orderID" name="orderID" title="Represent the uniqueness of the order"></td>
+            </tr>
+            <tr>
+                <th>Quantity</th>
+                <td id="theQuantity" name="theQuantity" title="You will get your items multiplied by this number">0</td>
+            </tr>
+            <tr><th>Status</th><td title="This is your status" name="orderStatus">Active</td>
+            </tr>
+        </table><br>
+        <table border="1px" class="container" name="itsTheItem">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="itemID" name="itemID" title="Represent the uniqueness of the item"></td>
+                    <td id="itemName" name="itemName" title="Name of your item"></td>
+                    <td id="category" name="category" title="Your item falls in this category"></td>
+                </tr>
+            </tbody>
+        </table>
+        <script name="detailsHandler">
+            const theImage = document.getElementById("theDelete");
+            theImage.addEventListener('click', () => {
+                window.location.assign("RestaurantDeleteOrder.html");
+            });
+        </script>
+    </body>
+</html>

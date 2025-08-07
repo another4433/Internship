@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>AQWE Restaurant</title>
+        <meta title="Dynamics" content="width=device-width; initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="Register.css">
+    </head>
+    <img src="9638472.png" alt="AQWE Restaurant" title="AQWE Restaurant"><br>
+    <h1>Register to the restaurant system</h1><br>
+    <body>
+        <div class="container">
+            <form name="registerForm">
+                <label for="customerName">Name </label>
+                <input type="text" name="customerName" value="John Doe" title="Type your name"><br>
+                <label for="customerID">ID </label>
+                <input type="number" name="customerID" value="99999999" title="Type your ID"><br>
+                <label title="Enter your DOB as year, month, day" name="customerDOB">Date of birth</label>
+                <input type="number" name="customerYear" placeholder="Enter year number" title="Which year are you born in?">
+                <input type="number" name="customerMonth" placeholder="Enter month number" title="Which month are you born in?">
+                <input type="number" name="customerDay" placeholder="Enter day number" title="Which day number are you born in?"><br>
+                <label for="customerEmail">Email </label>
+                <input type="email" name="customerEmail" value="someone@example.com" title="Secure your email"><br>
+                <label for="customerPhone">Phone </label>
+                <input type="tel" name="customerPhone" value="+97388888888" title="Just type your phone number">
+                <label for="customerHistory">Record Craeted On</label>
+                <input type="datetime" name="customerHistory" placeholder="Enter date and time" title="Format: yyy-mm-dd hh:mm:ss">
+                <br><label for="customerPassword" title="Secure your password">Password </label>
+                <input type="password" name="customerPassword" value="secret" title="Secure your password"><br>
+                <input type="submit" name="customerSubmit" value="Submit" title="Click this"><br>
+            </form><!--Create a global counter and assign it to each user-->
+        </div><br><!--Use the database to validate the uniquness of the user ID-->
+        <a href="RestaurantLogin.html" name="loginNavigator" title="Changed your mind?">Back to login?</a>
+    </body>
+</html>
