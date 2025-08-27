@@ -1,0 +1,30 @@
+@page
+@model RestaurantItemMasterViewModel
+@{
+    ViewData["Title"] = "User Item Searching";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="~/css/RestaurantSearch.css">
+    </head>
+    <body>
+        <h1 name="searchTitle">Search for item master by ID</h1><br><br>
+        <form class="container" name="searchForm" method="get">
+            <input type="number" name="searchID" placeholder="Enter the ID of Item Master" id="theTest" title="Enter a number" asp-route-id="id">
+            <input type="submit" name="submit" value="Confirm" id="thisIsSubmit" title="Click on this button">
+        </form>
+
+        @section Scripts {
+            <script name="searchOperation">
+                const theSubmit = document.getElementById("thisIsSubmit");
+                theSubmit.addEventListener('click', () => {
+                    window.location.assign("~/Order/RestaurantViewOrder");
+                });
+            </script>
+        }
+    </body>
+</html>

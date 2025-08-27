@@ -1,0 +1,70 @@
+h1 {
+    text-align: center;
+}
+#buttons {
+    align-content: center;
+}
+div > button {
+    margin-right: 5%;
+}
+div button {
+    margin-left: 5%;
+}
+html {
+    background-color: rgb(120, 249, 120);
+}
+table {
+    border: initial;
+    border-width: 2px;
+    border-style: solid;
+    width: 200px;
+}
+th {
+    font: optional;
+    font-family: sans-serif;
+    font-weight: bold;
+    border-width: 2px;
+    border-color: lightgray;
+    border-left-width: 2px;
+    border-left-color: black;
+}
+button {
+    align-self: center;
+    text-align: center;
+}
+div {
+    align-content: center;
+}
+#total {
+    flex: content;
+    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    align-content: center;
+}
+#personal {
+    display: block;
+    text-align: center;
+    padding-left: 2%;
+    padding-right: 2%;
+}
+#global {
+    display: block;
+    text-align: center;
+    padding-right: 2%;
+    padding-left: 2%;
+}
+#theHeading {
+    display: flex;
+    flex-direction: row;
+    margin-left: 40%;
+}
+div > h1 {
+    margin-right: 10%;
+}
+div > img {
+    margin-left: 35.5%;
+    width: 150px;
+    height: 150px;
+}

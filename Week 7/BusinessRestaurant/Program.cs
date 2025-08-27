@@ -2547,11 +2547,11 @@ public class Item
     {
         _category = category;
     }
-    private string GetName()
+    public string GetName()
     {
         return _name;
     }
-    private string GetCategory()
+    public string GetCategory()
     {
         return _category;
     }

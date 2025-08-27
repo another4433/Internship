@@ -1,0 +1,20 @@
+@page
+@model RestaurantOrderViewModel
+@{
+    ViewData["Title"] = "Delete Order";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="~/css/RestaurantDeleteOrder.css">
+    </head>
+    <body>
+        <form name="formDeleter" method="get">
+            <input type="number" name="theIDOrder" placeholder="Enter the ID of the order" title="Enter a number" asp-for="OrderId">
+            <input type="submit" name="submit" value="Submit" title="Click me">
+        </form>
+    </body>
+</html>

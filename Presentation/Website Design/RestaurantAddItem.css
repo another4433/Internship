@@ -1,0 +1,17 @@
+html {
+    background-color: rgb(120, 249, 120);
+}
+h2 {
+    text-align: center;
+}
+header {
+    font: optional;
+    font-weight: bold;
+    font-family: sans-serif;
+    padding-left: 2.8%;
+}
+label {
+    font: optional;
+    font-weight: bold;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}

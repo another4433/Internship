@@ -1,0 +1,110 @@
+@page
+@model RestaurantItemMasterViewModel
+@{
+    ViewData["Title"] = "AQWE Restaurant";
+    var theUser = Model.NewItemMaster.GetUser().GetCustomer().GetId();
+    int counter = 0;
+}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="~/css/RestaurantHome.css">
+    </head>
+    <body>
+        <div id="theHeading" name="headContainer">
+            <h1 name="theRestaurant">AQWE Restaurant</h1>
+            <a asp-page="~/Profile/RestaurantProfile">
+                <img name="restaurantImage" src="~/assets/profile-default.png.jpg" alt="Profile" id="theProfiling">
+            </a>
+        </div>
+        <span name="justALine">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br> 
+        <div id="total" name="total">
+            <div id="personal" name="personal">
+                <h4 name="personalOrderTitle">Your Orders </h4><br>
+                <table class="container" name="personalOrders">
+                    <thead>
+                        <tr>
+                            <th>Master ID</th>
+                            <th>Item ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Order ID</th>
+                            <th>Quantity</th>
+                            <th>To User</th>
+                            <th>Created On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int d = 0; d < Model.ItemMasterList.Size(); d++)
+                        {
+                            if (item.GetUser().GetCustomer().GetId() = theUser){
+                                <tr>
+                                    <td id="masterID" name="masterID">@Model.ItemMasterList.Get(d).GetMasterId()</td>
+                                    <td id="itemID" name="itemID">@Model.ItemMasterList.Get(d).GetItem().GetItemId()</td>
+                                    <td id="itemName" name="itemName">@Model.ItemMasterList.Get(d).GetItem().GetName()</td>
+                                    <td id="itemCategory" name="itemCategory">@Model.ItemMasterList.Get(d).GetItem.GetCategory()</td>
+                                    <td id="orderID" name="orderID">@Model.ItemMasterList.Get(d).GetOrder().GetOrderId()</td>
+                                    <td id="orderQuantity" name="orderQuantity">@Model.ItemMasterList.Get(d).GetOrder().GetQuantity()</td>
+                                    <td id="toUserID" name="toUserID">@Model.ItemMasterList.Get(d).GetOrder().GetUser().GetCustomer().GetName()</td>
+                                    <td id="createdOnID" name="createdOnID">@Model.ItemMasterList.Get(d).GetDate().Format("dd-mm-yyyy")</td>
+                                </tr>
+                            }
+                            else {
+                                <tr>
+                                    <td id="masterID" name="masterID">Hidden</td>
+                                    <td id="itemID" name="itemID">Hidden</td>
+                                    <td id="itemName" name="itemName">Hidden</td>
+                                    <td id="itemCategory" name="itemCategory">Hidden</td>
+                                    <td id="orderID" name="orderID">Hidden</td>
+                                    <td id="orderQuantity" name="orderQuantity">Hidden</td>
+                                    <td id="toUserID" name="toUserID">Hidden</td>
+                                    <td id="createdOnID" name="createdOnID">Hidden</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table><br>
+                <a asp-page="~/Add/RestaurantAddItem" class="button" id="Add" name="Add">Add Order</a>
+                <a asp-page="~/Search/RestaurantSearchOrder" class="button" id="view" name="view">View Order</a>
+            </div>
+            <div id="global" name="global">
+                <h4 name="globalOrdersTitle">Order Line</h4><br>
+                <table class="container" name="globalOrders">
+                    <thead>
+                        <tr>
+                            <th>Order Line ID</th>
+                            <th>Order ID</th>
+                            <th>User ID</th>
+                            <th>Request Creator</th>
+                            <th>Created On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int c = 0; c < Model.ItemMasterList.Size(); c++)
+                        {
+                            <tr>
+                                <td id="oLID" name="oLID">@counter</td>
+                                <td id="orderID" name="orderID">@Model.ItemMasterList.Get(c).GetOrder().GetOrderId()</td>
+                                <td id="userID" name="userID">@Model.ItemMasterList.Get(c).GetOrder().GetUser().GetUserId()</td>
+                                <td id="requestor" name="requestor">@Model.ItemMasterList.Get(c).GetOrder().GetUser().GetCustomer().GetEmail()</td>
+                                <td id="theCreated" name="theCreated">@Model.ItemMasterList.Get(c).GetDate().Format("dd-mm-yyyy")</td>
+                            </tr>
+                            counter = counter + 1;
+                        }
+                    </tbody>
+                </table><br>
+                <div id="buttons" name="buttons">
+                    <a asp-page="~/First/RestaurantFirstOrder" class="button" id="first" name="first">View First Order</a>
+                    <a asp-page="~/Last/RestaurantLastOrder" class="button" id="last" name="last">View Last Order</a>
+                </div>
+            </div>
+        </div><br>
+        @section Scripts {
+            <script src="~/js/RestaurantHome.js" name="mainOperations"></script>
+        }
+    </body>
+    <footer><header>The ID of the orderline may not be accurate. <br>It is used to represent the position of each orderline item.</header></footer>
+</html>

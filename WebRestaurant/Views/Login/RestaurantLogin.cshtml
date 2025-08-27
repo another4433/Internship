@@ -1,0 +1,45 @@
+@page
+@model RestaurantUserViewModel
+@{
+    ViewData["Title"] = "AQWE Restaurant";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="~/css/Login.css">
+    </head>
+
+    <body>
+        <img src="~/assets/9638472.png" alt="AQWE Restaurant" title="AQWE Restaurant"><br>
+        <h1 name="loginHeader">Login to the restaurant system</h1><br>
+        <div class="container">
+            <form name="loginForm" method="post" action="~/RestaurantLoginController.cs">
+                <label for="theEmail">Email </label>
+                <input type="email" name="theEmail" value="someone@example.com" title="Secured Email" asp-for="@Model.NewUser.GetCustomer().SetEmail(@theEmail)"><br>
+                <label for="thePassword">Password </label>
+                <input type="password" name="thePassword" value="***************" title="Secured Password" asp-for="@Model.NewUser.SetPassword(@thePassword)"><br>
+                <input type="submit" name="submit" value="Submit" title="Just Click This"><br>
+            </form>
+        </div>
+        <div class="option">
+            <a href="/RestaurantRegister" name="registerNavigator" title="Create account?">Register?</a>
+            <a name="forgetPass" title="What is your password?">Forget Password?</a>
+        </div><br>
+    </body>
+    
+    <footer name="extras">
+        <table border="1px" class="pico">
+            <tr>
+                <th colspan="3" title="Creator of this website">Author</th>
+            </tr>
+            <tr>
+                <td title="Best Developer">Ali Mohamed Ali</td>
+                <td><a href="mailto:alimohamedhassan9@outlook.com">Email</a></td>
+                <td>+97339266642</td>
+            </tr>
+        </table>
+    </footer>
+</html>

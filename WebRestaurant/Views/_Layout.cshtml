@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@ViewData["Title"] - AQWE Restaurant</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+        @RenderSection("Styles", required: false)
+    </head>
+    <body>
+        <header class="container">
+            <nav>
+                <ul>
+                    <li><strong>AQWE Restaurant</strong></li>
+                </ul>
+                <ul>
+                    <li><a asp-page="/RestaurantHome">Home</a></li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li><a asp-page="~/Profile/RestaurantProfile">Profile</a></li>
+                        <li><a asp-page="~/Add/RestaurantAddItem">Add Order</a></li>
+                        <li><a asp-page="~/Login/RestaurantLogin">Logout</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-page="~/Login/RestaurantLogin">Login</a></li>
+                        <li><a asp-page="~/Registration/RestaurantRegister">Register</a></li>
+                    }
+                </ul>
+            </nav>
+        </header>
+
+        <main class="container">
+            @RenderBody()
+        </main>
+
+        <footer class="container">
+            <table>
+                <tr>
+                    <th colspan="3">Author</th>
+                </tr>
+                <tr>
+                    <td>Ali Mohamed Ali</td>
+                    <td><a href="mailto:alimohamedhassan9@outlook.com">Email</a></td>
+                    <td>+97339266642</td>
+                </tr>
+            </table>
+        </footer>
+
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+</html>

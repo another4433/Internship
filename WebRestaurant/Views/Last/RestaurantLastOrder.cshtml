@@ -1,0 +1,75 @@
+@page
+@model RestaurantModel
+@{
+    ViewData["Title"] = "Last Order Details";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/LastOrder.css" />
+}
+
+<div class="order-detail-container">
+    <h1 class="order-title">Last Order Details</h1>
+    
+    <div class="order-section">
+        <h3>Order Information</h3>
+        <table class="order-table">
+            <tr>
+                <th>Order Line ID</th>
+                <td>2</td>
+            </tr>
+            <tr>
+                <th>Item Master ID</th>
+                <td>@Model.NewItemMaster.GetMasterId()</td>
+            </tr>
+            <tr>
+                <th>Order ID</th>
+                <td>@Model.NewItemMaster.GetOrder().GetOrderId()</td>
+            </tr>
+            <tr>
+                <th>Quantity</th>
+                <td>@Model.NewItemMaster.GetOrder().GetQuantity()</td>
+            </tr>
+            <tr>
+                <th>User ID</th>
+                <td>@Model.NewItemMaster.GetOrder().GetUser().GetUserId()</td>
+            </tr>
+            <tr>
+                <th>History Date</th>
+                <td>@Model.NewItemMaster.GetDate().Format("dd-mm-yyyy")</td>
+            </tr>
+            <tr>
+                <th>Request Creator</th>
+                <td>@Model.NewItemMaster.GetOrder().GetUser().GetCustomer().GetName()</td>
+            </tr>
+            <tr>
+                <th>Created On</th>
+                <td>@Model.NewItemMaster.GetDate().Format("dd-mm-yyyy HH:mm")</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>Active</td>
+            </tr>
+        </table>
+    </div>
+    <div class="order-section">
+        <h3>Item Details</h3>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@Model.NewItem.GetItemId()</td>
+                    <td>@Model.NewItem.GetName()</td>
+                    <td>@Model.NewItem.GetCategory()</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <a asp-page="~/Home/RestaurantHome" class="btn btn-back">Back to Home</a>
+</div>

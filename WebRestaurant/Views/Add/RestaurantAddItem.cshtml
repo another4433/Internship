@@ -1,0 +1,35 @@
+@page
+@model RestaurantItemMasterViewModel
+@{
+    ViewData["Title"] = "Add Order and Item";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <link rel="stylesheet" href="~/css/RestaurantAddItem.css" />
+}
+
+<div class="form-container">
+    <h2 class="form-title">Add Order</h2>
+    <p class="form-instruction">Fill in the following details:</p>
+
+    <form method="post" class="order-form">
+        <div class="form-group">
+            <label asp-for="Order.Quantity">Order Quantity</label>
+            <input asp-for="Order.Quantity" type="number" class="form-control" value="0" min="1" />
+            <span asp-validation-for="Order.Quantity" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Item.Name">Item Name</label>
+            <input asp-for="Item.Name" type="text" class="form-control" placeholder="Enter the name of the food" />
+            <span asp-validation-for="Item.Name" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Item.Category">Item Category</label>
+            <input asp-for="Item.Category" type="text" class="form-control" 
+                   placeholder="Which category does your food belong to?" />
+            <span asp-validation-for="Item.Category" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary" name="theSubmitter">Submit</button>
+    </form>
+</div>

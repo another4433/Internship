@@ -8,12 +8,12 @@
     </head>
     <body>
         <h1 name="searchTitle">Search for item master by ID</h1><br><br>
-        <form class="container" name="searchForm">
+        <form class="container" name="searchForm" method="get">
             <input type="number" name="searchID" placeholder="Enter the ID of Item Master" id="theTest" title="Enter a number">
             <input type="submit" name="submit" value="Confirm" id="thisIsSubmit" title="Click on this button">
         </form>
         <script name="searchOperation">
-            const theSubmit = document.getElementById("thisIsSubmit");
+            const theSubmit = document.getElementById("theTest");
             theSubmit.addEventListener('click', () => {
                 window.location.assign("RestaurantViewOrder.html");
             });

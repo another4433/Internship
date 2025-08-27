@@ -1,0 +1,145 @@
+@page
+@model RestaurantHomeViewModel
+@{
+    ViewData["Title"] = "Process Order";
+}
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+}
+@{
+    using System.Data.Common;
+    using System.Data.SqlTypes;
+    using MySql.Data.MySqlClient; 
+    using System.Diagnostics;
+    using BusinessRestaurant;
+    int counter1 = 0;
+    var itemID = 0;
+    var userID = -1;
+    string connectionString = "server=aqwe443346;database=therestaurant;user=another_4433;password=sha256;";
+    MySqlConnection conn = new MySqlConnection(connectionString);
+    conn.Open();
+}
+<header>Connection opened successfully!</header><br>
+@{
+    Dictionary<bool> theFounders = {false, false, false, false, false};
+    do {
+        using (MySqlCommand orderLineCommand = new MySqlCommand("SELECT * FROM OrderLine WHERE toOrder = @Counter", conn)){
+            orderLineCommand.Parameters.AddWithValue("@Counter", counter1);
+            orderLineCommand.Prepare();
+            using (MySqlDataReader readCommand = orderLineCommand.ExecuteDataReader()){
+                while (readCommand.Read()){
+                    if (readCommand["toOrder"].ToString().Equals(null)){
+                        counter1 = counter1 + 1;
+                    }
+                    else {
+                        theFounders[0] = true;
+                        userID = readCommand["userID"].Value;
+                    }
+                }
+            }
+        }
+    }
+    while (!theFounders[0] && counter1 < 100);
+    if (theFounders[0]){
+        using (MySqlCommand orderCommand = new MySqlCommand("SELECT * FROM RestaurantOrder WHERE orderID = @Index", conn)){
+            orderCommand.Parameters.AddWithValue("@Index", counter1);
+            orderCommand.Prepare();
+            using (MySqlDataReader orderReader = orderCommand.ExecuteDataReader()){
+                while (orderReader.Read()){
+                    if (!orderReader["orderID"].ToString().Equals(null)){
+                        theFounders[1] = true;
+                        if (orderReader["userID"].Value == userID){
+                            theFounders[4] = true;
+                        }
+                    }
+                }
+            } 
+        }
+    }
+    if (theFounders[0] && theFounders[1]){
+        using (MySqlCommand itemMasterCommand = new MySqlCommand("SELECT * FROM ItemMaster WHERE toOrder = @Index", conn)){
+            itemMasterCommand.Parameters.AddWithValue("@Index", counter1);
+            itemMasterCommand.Prepare();
+            using (MySqlDataReader reader = itemMasterCommand.ExecuteDataReader()){
+                while (reader.Read()){
+                    if (!reader["toOrder"].ToString.Equals(null)){
+                        itemID = reader["childID"].Value;
+                        theFounders[2] = true;
+                    }
+                }
+            }
+        }
+    }
+    if (theFounders[0] && theFounders[1] && theFounders[2]){
+        using (MySqlCommand itemCommand = new MySqlCommand("SELECT * FROM Item WHERE qID = @Index", conn)){
+            itemCommand.Parameters.AddWithValue("@Index", itemID);
+            itemCommand.Prepare();
+            using (MySqlDataReader itemReader = itemCommand.ExecuteDataReader()){
+                while (itemReader.Read()){
+                    if (!itemReader["Name"].ToString().Equals(null)){
+                        theFounders[3] = true;
+                    }
+                }
+            }
+        }
+    }
+    if (!queueOrders.GetOrder.Equals(new OrderLine())){
+        queueOrders.PollOrder();
+    }
+    var backup = listItemMaster.get(0);
+    listItemMaster.Remove(backup);
+    orderLine = new OrderLine();
+    itemMaster = new Item();
+    if (theFounders[0]){
+        using (MySqlCommand deleteOrderLine = new MySqlCommand("DELETE FROM OrderLine WHERE toOrder = @Location", conn)){
+            deleteOrderLine.Parameters.AddWithValue("@Location", counter1);
+            deleteOrderLine.Prepare();
+            deleteOrderLine.ExecuteNonQuery();
+        }
+    }
+    if (theFounders[1]){
+        using (MySqlCommand deleteOrder = new MySqlCommand("DELETE FROM RestaurantOrder WHERE orderID = @Location", conn)){
+            deleteOrder.Parameters.AddWithValue("@Location", counter1);
+            deleteOrder.Prepare();
+            deleteOrder.ExecuteNonQuery();
+        }
+    }
+    if (theFounders[2]){
+        using (MySqlCommand deleteItemMaster = new MySqlCommand("DELETE FROM ItemMaster WHERE toOrder = @Location", conn)){
+            deleteItemMaster.Parameters.AddWithValue("@Location", counter1);
+            deleteItemMaster.Prepare();
+            deleteItemMaster.ExecuteNonQuery();
+        }
+    }
+    if (theFounders[3]){
+        using (MySqlCommand deleteItem = new MySqlCommand("DELETE FROM Item WHERE qID = @Location", conn)){
+            deleteItem.Parameters.AddWithValue("@Location", itemID);
+            deleteItem.Prepare();
+            deleteItem.ExecuteNonQuery();
+        }
+    }
+    if (theFounders[4]){
+        using (MySqlCommand searchingCommand = new MySqlCommand("SELECT * FROM OrderLine WHERE userID = @User", conn)){
+            searchingCommand.Parameters.AddWithValue("@User", userID);
+            searchingCommand.Prepare();
+            using (MySqlDataReader reader = searchingCommand.ExecuteDataReader()){
+                while (reader.Read()){
+                    if (reader["userID"].ToString.Equals(null)){
+                        theFounders[4] = false;
+                    }
+                    else {
+                        theFounders[5] = true;
+                    }
+                }
+            }
+        }
+    }
+    if (!theFounders[4]){
+        queueOrders.PollUser();
+    }                 
+}
+<h4>The order might have been processed.</h4><br>
+<h4>Heading back to the homepage...</h4>
+@section Scripts {
+    <script>window.location.assign("~/Home/RestaurantHome");</script>
+}

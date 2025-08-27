@@ -22,11 +22,7 @@ internal abstract class Program
         {
             Console.WriteLine(item);
         }
-        
-        //Apply this to all of your web pages
         var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container
         builder.Services.AddControllersWithViews();
 
         var app = builder.Build();
@@ -41,55 +37,62 @@ internal abstract class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapControllerRoute(
             name: "default",
-            pattern: "{controller=Login}/{action=RestaurantLogin}/{id?}"
+            pattern: "{controller=~/Controller/RestaurantLoginController.cs}/{action=~/View/Login/RestaurantLogin.cshtml}"
         );
 
         app.MapControllerRoute(
-            name: "register",
-            pattern: "{controller=Register}/{action=RestaurantRegister}/{id?}"
+            name: "Register",
+            pattern: "{controller=~/Controller/RestaurantRegisterController.cs}/{action=RestaurantRegister}"
         );
 
         app.MapControllerRoute(
-            name: "home",
-            pattern: "{controller=Home}/{action=RestaurantHome}/{id?}"
+            name: "Home",
+            pattern: "{controller=~/Controller/RestaurantHomeController.cs}/{action=RestaurantHome}"
         );
 
         app.MapControllerRoute(
-            name: "profile",
-            pattern: "{controller=Profile}/{action=RestaurantProfile}/{id?}"
+            name: "Profile",
+            pattern: "{controller=~/Controller/RestaurantProfileController.cs}/{action=RestaurantProfile}"
         );
 
         app.MapControllerRoute(
-            name: "first",
-            pattern: "{controller=First}/{action=RestaurantFirstOrder}/{id?}"
+            name: "First",
+            pattern: "{controller=~/Controller/RestaurantFirstController.cs}/{action=RestaurantFirstOrder}"
         );
 
         app.MapControllerRoute(
-            name: "last",
-            pattern: "{controller=Last}/{action=RestaurantLastOrder}/{id?}"
+            name: "Last",
+            pattern: "{controller=~/Controller/RestaurantLastController.cs}/{action=RestaurantLastOrder}"
         );
 
         app.MapControllerRoute(
-            name: "view",
-            pattern: "{controller=View}/{action=RestaurantViewOrder}"
+            name: "Order",
+            pattern: "{action=~/Controller/RestaurantViewOrder.cs}/{id?}"
         );
-
+        
         app.MapControllerRoute(
-            name: "search",
-            pattern: "{controller=Search}/{action=RestaurantSearchOrder}"
+            name: "Search",
+            pattern: "{controller=~/Controller/RestaurantSearchController.cs}/{action=RestaurantSearchOrder}"
         );
-
+        
         app.MapControllerRoute(
-            name: "delete",
-            pattern: "{controller=Delete}/{action=RestaurantDeleteOrder}"
+            name: "Delete",
+            pattern: "{controller=~/Controller/RestaurantDeleteController.cs}/{action=RestaurantDeleteOrder}/{id?}"
         );
-
+        
         app.MapControllerRoute(
-            name: "process",
-            pattern: "{controller=Delete}/{action=RestaurantProcessOrder}"
+            name: "Process",
+            pattern: "{controller=~/Controller/RestaurantProcessController.cs}/{action=RestaurantProcessOrder}"
+        );
+        
+        app.MapControllerRoute(
+            name: "Add",
+            pattern: "{controller=~/Controller/RestaurantAddItemController.cs}/{action=RestaurantAddItem}"
         );
         
         app.Run();

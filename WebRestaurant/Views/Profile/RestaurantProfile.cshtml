@@ -1,0 +1,35 @@
+@page
+@model RestaurantModel
+@{
+    ViewData["Title"] = "Your Profile";
+}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link rel="stylesheet" href="~/css/RestaurantProfile.css">
+    </head>
+    <body class="container">
+
+        <h1 name="profileHeader">Profile Details</h1><br>
+
+        <table border="1px" name="profile-default?">
+            <tr><th>Name</th><td name="theNamer" id="theNamer" colspan="2" title="This is your name">@Model.NewCustomer.GetName()</td></tr>
+            <tr><th>ID</th><td name="theID" id="theID" colspan="2" title="This is your ID">@Model.NewCustomer.GetId()</td></tr>
+            <tr><th>Email</th><td name="theEmail" id="theEmail" colspan="2" title="This is your email">@Model.NewCustomer.GetEmail()</td></tr>
+            <tr><th>Phone</th><td name="thePhone" id="thePhone" colspan="2" title="This is your phone number">@Model.NewCustomer.GetPhone()</td></tr>
+            <tr><th>Password</th><td name="thePassword" id="thePassword" colspan="2" title="This is your password">@Model.NewUser.GetPassword()</td></tr>
+            <tr><th>Status</th><td name="theStatus" colspan="2" title="This is your status">Active</td></tr>
+            <tr>
+                <th name="theDOB" colspan="3" id="theDOB" title="This is your date of birth">DOB</th>
+            </tr>
+            <tr>
+                <td name="theYear" id="theYear" title="You are born in this day">@Model.NewCustomer.GetDob().Day</td>
+                <td name="theMonth" id="theMonth" title="You are born in this month">@Model.NewCustomer.GetDob().Month</td>
+                <td name="theDay" id="theDay" title="You are born in this year">@Model.NewCustomer.GetDob.Year</td>
+            </tr>
+        </table>
+        
+    </body>
+</html>
